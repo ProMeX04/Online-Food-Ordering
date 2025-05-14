@@ -1,0 +1,32 @@
+{
+	"compilerOptions": {
+		"target": "ES2024",
+		"rootDir": "../",
+		"outDir": "./dist",
+		"baseUrl": ".",
+		"module": "CommonJS",
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true,
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"strict": true,
+		"noEmit": true,
+		"noImplicitAny": true,
+		"noImplicitOverride": true,
+		"paths": {
+			"@/*": ["./src/*"],
+			"@server/*": ["./src/server/*"],
+			"@config/*": ["./src/config/*"],
+			"@controllers/*": ["./src/controllers/*"],
+			"@middlewares/*": ["./src/middlewares/*"],
+			"@model/*": ["./src/model/*"],
+			"@routes/*": ["./src/routes/*"],
+			"@services/*": ["./src/services/*"],
+			"@shared/*": ["../shared/*"],
+			"@utils/*": ["./src/utils/*"]
+		}
+	},
+	"include": ["src/**/*", "../../shared/**/*", "src/types/**/*.d.ts"],
+	"exclude": ["node_modules", "dist"]
+}

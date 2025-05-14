@@ -1,0 +1,97 @@
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 33% 98%;
+    --foreground: 222 47% 11%;
+    
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    
+    --primary: 354 76% 56%;
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 41 100% 52%;
+    --secondary-foreground: 222 47% 11%;
+    
+    --accent: 162 94% 43%;
+    --accent-foreground: 0 0% 100%;
+    
+    --muted: 210 40% 96%;
+    --muted-foreground: 222 47% 40%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 222 47% 80%;
+    --input: 222 47% 80%;
+    --ring: 222 84% 70%;
+    
+    --light: 0 0% 97%;
+    --neutral: 222 47% 11%;
+    
+    --radius: 1.5rem;
+  }
+ 
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply font-quicksand antialiased bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .food-card {
+    @apply transition-all duration-300 hover:-translate-y-2;
+  }
+  
+  .food-card img {
+    @apply transition-all duration-500;
+  }
+  
+  .food-card:hover img {
+    @apply scale-105;
+  }
+  
+  /* Mobile nav animations */
+  .menu-open .hamburger-top {
+    @apply rotate-45 translate-y-[6px] translate-x-[6px];
+  }
+  
+  .menu-open .hamburger-middle {
+    @apply hidden;
+  }
+  
+  .menu-open .hamburger-bottom {
+    @apply -rotate-45 -translate-y-[6px] translate-x-[6px];
+  }
+  
+  /* Mobile menu slide animation */
+  .mobile-menu {
+    @apply transition-transform duration-300 ease-in-out;
+  }
+  
+  .mobile-menu.hidden {
+    @apply -translate-x-full;
+  }
+  
+  /* Cart count notification */
+  @keyframes pulse-scale {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+  }
+  
+  .cart-count {
+    animation: pulse-scale 2s infinite;
+  }
+}
