@@ -2,6 +2,7 @@ import DishController from "@/controllers/dish.controller"
 import { Router } from "express"
 import { authenticate, requireAdmin } from "@/middlewares/auth.middleware"
 import { dishUpload } from "@/middlewares/upload.middleware"
+import { processImage } from '@/middlewares/image-processor.middleware'
 const router = Router()
 
 router.get("/", DishController.getAllDish)
@@ -18,6 +19,6 @@ router.put("/:id/rating", authenticate, requireAdmin, DishController.updateDishR
 router.put("/:id/increment-sold", authenticate, requireAdmin, DishController.incrementSoldCount)
 router.delete("/:id", authenticate, requireAdmin, DishController.deleteDish)
 
-router.post("/:id/image", authenticate, requireAdmin, dishUpload.single('image'), DishController.uploadDishImage)
+router.post("/:id/image", authenticate, requireAdmin, dishUpload.single('image'), processImage, DishController.uploadDishImage)
 router.get("/similar/:id", DishController.getSimilarDishes)
 export default router

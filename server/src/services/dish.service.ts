@@ -131,7 +131,8 @@ export default class DishService {
             return JSON.parse(cachedDish)
         }
 
-        const dish = await DishModel.findById(id)
+        const dish = await DishModel.findById(id).lean()
+        console.log(dish)
 
         if (dish) {
             await redis.set(cacheKey, JSON.stringify(dish))
@@ -235,6 +236,7 @@ export default class DishService {
         const popularDishes = await DishModel.find({ isAvailable: true })
             .sort({ soldCount: -1, rating: -1 })
             .limit(limit)
+            .lean()
 
         await redis.set(cacheKey, JSON.stringify(popularDishes))
 
@@ -251,7 +253,7 @@ export default class DishService {
 
         const dishes = await DishModel.find({ category: categoryId, isAvailable: true })
             .limit(limit)
-
+            .lean()
         await redis.set(cacheKey, JSON.stringify(dishes))
 
         return dishes
@@ -318,7 +320,8 @@ export default class DishService {
 
         const dishes = await DishModel.find(filterOptions)
             .sort({ rating: -1, soldCount: -1 })
-            .limit(limit);
+            .limit(limit)
+            .lean()
 
         await redis.set(cacheKey, JSON.stringify(dishes));
 
@@ -339,6 +342,7 @@ export default class DishService {
         })
             .sort({ createdAt: -1 })
             .limit(limit)
+            .lean()
 
         await redis.set(cacheKey, JSON.stringify(specialDishes))
 

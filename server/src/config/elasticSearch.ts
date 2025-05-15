@@ -1,3 +1,5 @@
+import DishService from '@/services/dish.service'
+import SearchService from '@/services/search.service'
 import { Client } from '@elastic/elasticsearch'
 
 const elasticNode = process.env.ELASTICSEARCH_NODE || 'http://localhost:9200'
@@ -65,4 +67,29 @@ const createDishIndex = async () => {
     }
 }
 
-export { esClient, checkConnection, setupDishIndex, createDishIndex } 
+const initElasticsearch = async () => {
+    try {
+        const connected = await checkConnection();
+        if (!connected) {
+            console.warn('⚠️ Không thể kết nối với Elasticsearch. Tìm kiếm nâng cao sẽ không hoạt động.');
+            return;
+        }
+        SearchService.resetIndexStatus();
+
+        const autoSync = process.env.AUTO_SYNC_ELASTICSEARCH !== 'false';
+        if (autoSync) {
+            console.info('🔄 Bắt đầu đồng bộ dữ liệu từ MongoDB sang Elasticsearch...');
+            const success = await DishService.syncAllDishesToElasticsearch();
+            if (success) {
+                console.info('✅ Đồng bộ dữ liệu từ MongoDB sang Elasticsearch thành công');
+            } else {
+                console.warn('⚠️ Đồng bộ dữ liệu từ MongoDB sang Elasticsearch không thành công');
+            }
+        }
+    } catch (error: any) {
+        console.error(`❌ Lỗi khi khởi tạo Elasticsearch: ${error.message}`);
+    }
+}
+
+
+export { esClient, checkConnection, setupDishIndex, createDishIndex, initElasticsearch } 

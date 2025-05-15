@@ -36,12 +36,15 @@
     "multer": "^1.4.5-lts.2",
     "nodemailer": "^7.0.3",
     "nodemon": "^3.1.10",
+    "sharp": "^0.34.1",
     "slugify": "^1.6.6",
-    "ts-node-dev": "^2.0.0"
+    "ts-node-dev": "^2.0.0",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@types/mongoose": "^5.11.96",
     "@types/node": "^22.15.17",
+    "@types/uuid": "^10.0.0",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.8.3"

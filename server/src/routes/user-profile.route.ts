@@ -5,6 +5,7 @@ import multer from "multer"
 import path from "path"
 import fs from "fs"
 import { authenticate } from "@/middlewares/auth.middleware"
+import { processImage } from '@/middlewares/image-processor.middleware'
 
 const uploadDir = "uploads/profiles/"
 if (!fs.existsSync(uploadDir)) {
@@ -46,7 +47,7 @@ router.get("/profile", authenticate, UserProfileController.getProfile)
 router.put("/profile", authenticate, UserProfileController.updateProfile)
 router.delete("/profile", authenticate, UserProfileController.deleteProfile)
 
-router.post("/profile/image", authenticate, upload.single('image'), UserProfileController.updateProfileImage)
+router.post("/profile/image", authenticate, upload.single('image'), processImage, UserProfileController.updateProfileImage)
 
 router.post("/addresses", authenticate, UserProfileController.addAddress)
 router.put("/addresses/:addressId", authenticate, UserProfileController.updateAddress)

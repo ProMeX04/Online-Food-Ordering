@@ -20,7 +20,7 @@ export default class CategoryService {
             return JSON.parse(cachedCategories)
         }
 
-        const categories = await CategoryModel.find().sort({ name: 1 })
+        const categories = await CategoryModel.find().sort({ name: 1 }).lean()
         await redis.set(CATEGORIES_CACHE_KEY, JSON.stringify(categories))
         return categories
     }
@@ -31,7 +31,7 @@ export default class CategoryService {
         if (cachedCategory) {
             return JSON.parse(cachedCategory)
         }
-        const category = await CategoryModel.findOne({ slug })
+        const category = await CategoryModel.findOne({ slug }).lean()
         if (!category) {
             throw new Error("Category not found")
         }
@@ -49,7 +49,7 @@ export default class CategoryService {
         if (cachedCategory) {
             return JSON.parse(cachedCategory)
         }
-        const category = await CategoryModel.findById(id)
+        const category = await CategoryModel.findById(id).lean()
         if (!category) {
             throw new Error("Category not found")
         }
@@ -59,7 +59,7 @@ export default class CategoryService {
     static searchByName = async (name: string): Promise<ICategory[]> => {
         return await CategoryModel.find({
             name: { $regex: name, $options: 'i' }
-        });
+        }).lean()
     }
 
     static async create(categoryData: Partial<ICategory>): Promise<ICategory> {
@@ -74,12 +74,11 @@ export default class CategoryService {
     }
 
     static async update(id: string, categoryData: Partial<ICategory>): Promise<ICategory | null> {
-        // Check if updating name to one that already exists (excluding itself)
         if (categoryData.name) {
             const existingCategory = await CategoryModel.findOne({
                 name: categoryData.name,
                 _id: { $ne: id }
-            })
+            }).lean()
             if (existingCategory) {
                 throw new Error("Another category with this name already exists")
             }
