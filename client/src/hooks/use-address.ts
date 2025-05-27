@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { IAddress, IAddressUpdate } from "@/types/address"
-import { api } from "@/lib"
 import { useAuth } from "@/hooks/use-auth"
-
+import { del, get, post, put } from "@/lib/axiosClient"
 export function useAddress() {
   const [addresses, setAddresses] = useState<IAddress[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -14,7 +13,7 @@ export function useAddress() {
 
     try {
       setIsLoading(true)
-      const response = await api.user.getAddresses() as any
+      const response = await get('/user-profile/addresses') as any
       const addressesData = response?.data || response || []
       setAddresses(addressesData)
     } catch (err) {
@@ -34,7 +33,7 @@ export function useAddress() {
   const addAddress = async (address: IAddress) => {
     try {
       setIsLoading(true)
-      await api.user.addAddress(address)
+      await post('/user-profile/addresses', address)
       await fetchAddresses()
       return true
     } catch (err) {
@@ -49,7 +48,7 @@ export function useAddress() {
   const updateAddress = async ({ addressIndex, address }: IAddressUpdate) => {
     try {
       setIsLoading(true)
-      await api.user.updateAddress(addressIndex, address)
+      await put(`/user-profile/addresses/${addressIndex}`, address)
       await fetchAddresses()
       return true
     } catch (err) {
@@ -64,7 +63,7 @@ export function useAddress() {
   const deleteAddress = async (addressIndex: number) => {
     try {
       setIsLoading(true)
-      await api.user.deleteAddress(addressIndex)
+      await del(`/user-profile/addresses/${addressIndex}`)
       await fetchAddresses()
       return true
     } catch (err) {
@@ -82,16 +81,16 @@ export function useAddress() {
       const address = addresses[addressIndex]
       if (!address) throw new Error("Address not found")
 
-      const updatedAddresses = await Promise.all(
+      await Promise.all(
         addresses.map(async (addr, index) => {
           if (addr.isDefault && index !== addressIndex) {
-            await api.user.updateAddress(index, { ...addr, isDefault: false })
+            await put(`/user-profile/addresses/${index}`, { ...addr, isDefault: false })
           }
           return addr
         })
       )
 
-      await api.user.updateAddress(addressIndex, { ...address, isDefault: true })
+      await put(`/user-profile/addresses/${addressIndex}`, { ...address, isDefault: true })
       await fetchAddresses()
       return true
     } catch (err) {

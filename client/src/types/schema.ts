@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { IAddress } from "./address";
 
 export enum MediaType {
   IMAGE = "image",
@@ -32,6 +33,8 @@ export const dishSchema = z.object({
 
 export type Dish = z.infer<typeof dishSchema>;
 
+
+
 export const orderSchema = z.object({
   _id: z.string(),
   userId: z.string(),
@@ -50,9 +53,9 @@ export const orderSchema = z.object({
     city: z.string().min(1, "Thành phố không được để trống")
   }),
   note: z.string().optional(),
-  paymentMethod: z.string(),
-  paymentStatus: z.enum(["pending", "paid", "failed"])
+  paymentID: z.string().optional(),
 });
+
 
 export type Order = z.infer<typeof orderSchema>;
 
@@ -129,4 +132,58 @@ export type UserProfile = z.infer<typeof userProfileSchema>;
 
 export type User = z.infer<typeof userSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
-export type LoginInput = z.infer<typeof loginSchema>; 
+export type LoginInput = z.infer<typeof loginSchema>;
+
+
+
+export interface IOrderItem {
+  dishId: string
+  quantity: number
+  price: number
+}
+export enum OrderStatus {
+  PENDING = 'pending',
+  PROCESSING = 'processing',
+  SHIPPED = 'shipped',
+  DELIVERED = 'delivered',
+  CANCELLED = 'cancelled',
+}
+export interface IOrder {
+  _id?: string
+  userId?: string
+  orderItems: IOrderItem[]
+  totalAmount: number
+  notes?: string
+  status: OrderStatus
+  createdAt?: Date
+  updatedAt?: Date
+  paymentID?: string
+  address: IAddress
+} 
+
+
+
+
+
+export enum PaymentMethod {
+  COD = 'cod',
+  BANK = 'bank',
+  CARD = 'card',
+}
+
+export enum PaymentStatus {
+  PENDING = 'pending',
+  COMPLETED = 'completed',
+  FAILED = 'failed',
+}
+
+export interface IPayment {
+  _id: string
+  orderId: string
+  amount: number
+  method: string
+  status: string
+}
+
+
+ 

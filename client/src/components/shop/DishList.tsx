@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider'
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib'
-import { get } from '@/lib/http-client'
+import { get } from '@/lib'
+import InfiniteScroll from 'react-infinite-scroll-component'
 
 interface DishListProps {
     _id?: string
@@ -32,73 +33,95 @@ export function DishList({ _id, initialFilters, categories }: DishListProps) {
     })
     const [sortBy, setSortBy] = useState<string>('popular')
     const [currentPage, setCurrentPage] = useState(1)
-    const itemsPerPage = 9
+    const itemsPerPage = 30
 
     const [dishes, setDishes] = useState<Dish[]>([])
-    const [totalPages, setTotalPages] = useState(1)
     const [totalItems, setTotalItems] = useState(0)
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error | null>(null)
+    const [hasMore, setHasMore] = useState(true)
 
     useEffect(() => {
         const delaySearchTimeout = setTimeout(() => {
             if (searchInput !== searchQuery) {
                 setSearchQuery(searchInput)
-                setCurrentPage(1)
+                resetList()
             }
         }, 800)
 
         return () => clearTimeout(delaySearchTimeout)
     }, [searchInput, searchQuery])
 
+    const resetList = () => {
+        setDishes([])
+        setCurrentPage(1)
+        setHasMore(true)
+    }
+
     useEffect(() => {
-        const fetchDishes = async () => {
-            try {
-                setIsLoading(true)
-                let queryParams = `?page=${currentPage}&limit=${itemsPerPage}`
-
-                if (sortBy) {
-                    queryParams += `&sortBy=${sortBy}`
-                }
-
-                if (_id) {
-                    queryParams += `&category=${_id}`
-                }
-
-                if (searchQuery) {
-                    queryParams += `&searchTerm=${searchQuery}`
-                }
-
-                if (filters.minPrice > 0) {
-                    queryParams += `&minPrice=${filters.minPrice}`
-                }
-
-                if (filters.maxPrice < 500000) {
-                    queryParams += `&maxPrice=${filters.maxPrice}`
-                }
-
-                const response = (await get(`/dishes${queryParams}`)) as {
-                    items: Dish[]
-                    total: number
-                    page: string
-                    limit: string
-                    totalPages: number
-                }
-
-                setDishes(response.items || [])
-                setTotalPages(response.totalPages || 1)
-                setTotalItems(response.total || 0)
-                setCurrentPage(parseInt(response.page) || 1)
-            } catch (err) {
-                console.error('Error fetching dishes:', err)
-                setError(err as Error)
-            } finally {
-                setIsLoading(false)
-            }
+        if (currentPage === 1) {
+            fetchDishes()
+        } else {
+            resetList()
         }
+    }, [_id, searchQuery, sortBy, filters.minPrice, filters.maxPrice])
 
-        fetchDishes()
-    }, [_id, searchQuery, sortBy, currentPage, filters.minPrice, filters.maxPrice])
+    useEffect(() => {
+        if (currentPage > 1) {
+            fetchDishes()
+        }
+    }, [currentPage])
+
+    const fetchDishes = async () => {
+        try {
+            setIsLoading(true)
+            let queryParams = `?page=${currentPage}&limit=${itemsPerPage}`
+
+            if (sortBy) {
+                queryParams += `&sortBy=${sortBy}`
+            }
+
+            if (_id) {
+                queryParams += `&category=${_id}`
+            }
+
+            if (searchQuery) {
+                queryParams += `&searchTerm=${searchQuery}`
+            }
+
+            if (filters.minPrice > 0) {
+                queryParams += `&minPrice=${filters.minPrice}`
+            }
+
+            if (filters.maxPrice < 500000) {
+                queryParams += `&maxPrice=${filters.maxPrice}`
+            }
+
+            const response = (await get(`/dishes${queryParams}`)) as {
+                items: Dish[]
+                total: number
+                page: string
+                limit: string
+                totalPages: number
+            }
+
+            const newDishes = response.items || []
+
+            if (newDishes.length === 0) {
+                setHasMore(false)
+            } else {
+                // Nối thêm dữ liệu mới vào danh sách món ăn hiện có
+                setDishes((prevDishes) => (currentPage === 1 ? newDishes : [...prevDishes, ...newDishes]))
+                setTotalItems(response.total || 0)
+                setHasMore(newDishes.length === itemsPerPage)
+            }
+        } catch (err) {
+            console.error('Error fetching dishes:', err)
+            setError(err as Error)
+        } finally {
+            setIsLoading(false)
+        }
+    }
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchInput(e.target.value)
@@ -106,65 +129,16 @@ export function DishList({ _id, initialFilters, categories }: DishListProps) {
 
     const handleFilterChange = (name: string, value: boolean | number) => {
         setFilters((prev) => ({ ...prev, [name]: value }))
-        setCurrentPage(1)
+        resetList()
     }
 
     const handleSortChange = (value: string) => {
         setSortBy(value)
-        setCurrentPage(1)
+        resetList()
     }
 
-    const handlePageChange = (pageNumber: number) => {
-        setCurrentPage(pageNumber)
-    }
-
-    const renderPagination = () => {
-        if (totalPages <= 1) return null
-
-        const pages = []
-        const maxButtons = 5
-        let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2))
-        const endPage = Math.min(totalPages, startPage + maxButtons - 1)
-
-        if (endPage - startPage + 1 < maxButtons) {
-            startPage = Math.max(1, endPage - maxButtons + 1)
-        }
-
-        for (let i = startPage; i <= endPage; i++) {
-            pages.push(
-                <Button key={i} variant={i === currentPage ? 'default' : 'outline'} size="sm" onClick={() => handlePageChange(i)} className="w-9 h-9 p-0">
-                    {i}
-                </Button>,
-            )
-        }
-
-        return (
-            <div className="flex items-center gap-2 justify-center mt-8">
-                <Button variant="outline" size="sm" onClick={() => handlePageChange(Math.max(1, currentPage - 1))} disabled={currentPage === 1} className="w-9 h-9 p-0">
-                    <i className="fas fa-chevron-left text-xs"></i>
-                </Button>
-                {startPage > 1 && (
-                    <>
-                        <Button variant="outline" size="sm" onClick={() => handlePageChange(1)} className="w-9 h-9 p-0">
-                            1
-                        </Button>
-                        {startPage > 2 && <span className="text-neutral/60">...</span>}
-                    </>
-                )}
-                {pages}
-                {endPage < totalPages && (
-                    <>
-                        {endPage < totalPages - 1 && <span className="text-neutral/60">...</span>}
-                        <Button variant="outline" size="sm" onClick={() => handlePageChange(totalPages)} className="w-9 h-9 p-0">
-                            {totalPages}
-                        </Button>
-                    </>
-                )}
-                <Button variant="outline" size="sm" onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages} className="w-9 h-9 p-0">
-                    <i className="fas fa-chevron-right text-xs"></i>
-                </Button>
-            </div>
-        )
+    const loadMoreDishes = () => {
+        setCurrentPage((prevPage) => prevPage + 1)
     }
 
     if (error) {
@@ -255,10 +229,10 @@ export function DishList({ _id, initialFilters, categories }: DishListProps) {
 
             <div className="flex-1">
                 <div className="mb-6 flex justify-between items-center">
-                    <p className="text-neutral/70">{isLoading ? 'Đang tìm kiếm...' : `Hiển thị ${dishes.length} trên ${totalItems} kết quả`}</p>
+                    <p className="text-neutral/70">{isLoading && currentPage === 1 ? 'Đang tìm kiếm...' : `Hiển thị ${dishes.length} trên ${totalItems} kết quả`}</p>
                 </div>
 
-                {isLoading && (
+                {isLoading && currentPage === 1 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {[...Array(6)].map((_, i) => (
                             <Card key={i} className="animate-pulse p-4 shadow-sm">
@@ -274,7 +248,7 @@ export function DishList({ _id, initialFilters, categories }: DishListProps) {
                     </div>
                 )}
 
-                {!isLoading && dishes.length === 0 && (
+                {!isLoading && currentPage === 1 && dishes.length === 0 && (
                     <Card className="p-8 text-center">
                         <i className="fas fa-search text-4xl text-neutral/30 mb-4"></i>
                         <h3 className="font-medium text-xl mb-2">Không tìm thấy kết quả</h3>
@@ -288,6 +262,7 @@ export function DishList({ _id, initialFilters, categories }: DishListProps) {
                                     minPrice: 0,
                                     maxPrice: 500000,
                                 })
+                                resetList()
                             }}
                         >
                             Xóa bộ lọc
@@ -295,16 +270,31 @@ export function DishList({ _id, initialFilters, categories }: DishListProps) {
                     </Card>
                 )}
 
-                {!isLoading && dishes.length > 0 && (
-                    <>
+                {dishes.length > 0 && (
+                    <InfiniteScroll
+                        dataLength={dishes.length}
+                        next={loadMoreDishes}
+                        hasMore={hasMore}
+                        loader={
+                            <div className="text-center py-4">
+                                <div
+                                    className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
+                                    role="status"
+                                >
+                                    <span className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">Đang tải...</span>
+                                </div>
+                                <p className="mt-2 text-neutral/70">Đang tải thêm món ăn...</p>
+                            </div>
+                        }
+                        endMessage={<p className="text-center text-neutral/60 pb-4">Đã hiển thị tất cả món ăn</p>}
+                        scrollThreshold={0.8}
+                    >
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {dishes.map((dish: Dish) => (
                                 <FoodCard key={dish._id} dish={dish} />
                             ))}
                         </div>
-
-                        {renderPagination()}
-                    </>
+                    </InfiniteScroll>
                 )}
             </div>
         </div>

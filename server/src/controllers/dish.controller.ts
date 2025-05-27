@@ -52,13 +52,11 @@ export default class DishController {
             const newDish: ICreateDishRequest = req.body
             const createdDish = await DishService.create(newDish)
 
-            // Ensure the image URL is a full URL
-            const processedDish = 'toObject' in createdDish ? (createdDish as any).toObject() : createdDish;
-            if (processedDish.imageUrl) {
-                processedDish.imageUrl = getFullImageUrl(processedDish.imageUrl);
+            if (createdDish.imageUrl) {
+                createdDish.imageUrl = getFullImageUrl(createdDish.imageUrl);
             }
 
-            sendSuccess(res, processedDish, "Dish created successfully", 201)
+            sendSuccess(res, createdDish, "Dish created successfully", 201)
         } catch (err) {
             sendError(res, (err as Error).message)
         }
@@ -103,13 +101,11 @@ export default class DishController {
             const updatedDish = await DishService.updateAvailability(id, isAvailable)
             if (!updatedDish) throw new Error("Dish Not Found")
 
-            // Ensure the image URL is a full URL
-            const processedDish = 'toObject' in updatedDish ? (updatedDish as any).toObject() : updatedDish;
-            if (processedDish.imageUrl) {
-                processedDish.imageUrl = getFullImageUrl(processedDish.imageUrl);
+            if (updatedDish.imageUrl) {
+                updatedDish.imageUrl = getFullImageUrl(updatedDish.imageUrl);
             }
 
-            sendSuccess(res, processedDish, `Dish is now ${isAvailable ? 'available' : 'unavailable'}`)
+            sendSuccess(res, updatedDish, `Dish is now ${isAvailable ? 'available' : 'unavailable'}`)
         } catch (err) {
             sendError(res, (err as Error).message)
         }
@@ -146,25 +142,21 @@ export default class DishController {
             const updatedDish = await DishService.incrementSoldCount(id, quantity || 1)
             if (!updatedDish) throw new Error("Dish Not Found")
 
-            // Ensure the image URL is a full URL
-            const processedDish = 'toObject' in updatedDish ? (updatedDish as any).toObject() : updatedDish;
-            if (processedDish.imageUrl) {
-                processedDish.imageUrl = getFullImageUrl(processedDish.imageUrl);
+            if (updatedDish.imageUrl) {
+                updatedDish.imageUrl = getFullImageUrl(updatedDish.imageUrl);
             }
 
-            sendSuccess(res, processedDish, "Dish sold count updated successfully")
+            sendSuccess(res, updatedDish, "Dish sold count updated successfully")
         } catch (err) {
             sendError(res, (err as Error).message)
         }
     }
 
-    // Thêm các endpoint mới để sử dụng các phương thức cache mới
 
     static async getPopularDishes(req: Request, res: Response): Promise<void> {
         try {
             const limit = req.query.limit ? Number(req.query.limit) : 10
             const dishes = await DishService.getPopularDishes(limit)
-            // Process all dish images to get full URLs
             const processedDishes = processImagesInArray(dishes, 'imageUrl')
             sendSuccess(res, processedDishes)
         } catch (err) {
@@ -178,7 +170,6 @@ export default class DishController {
             const limit = req.query.limit ? Number(req.query.limit) : 20
 
             const dishes = await DishService.getDishesByCategory(categoryId, limit)
-            // Process all dish images to get full URLs
             const processedDishes = processImagesInArray(dishes, 'imageUrl')
             sendSuccess(res, processedDishes)
         } catch (err) {
@@ -228,7 +219,6 @@ export default class DishController {
                 limitNumber
             )
 
-            // Process dish images to get full URLs
             const processedDishes = processImagesInArray(result.dishes, 'imageUrl')
             sendSuccess(res, processedDishes)
         } catch (err) {

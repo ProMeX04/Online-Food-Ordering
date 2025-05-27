@@ -1,7 +1,7 @@
 import { useLocation, useRoute } from 'wouter'
 import { Sidebar, SidebarHeader, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarFooter, SidebarSeparator } from '@/components/ui/sidebar'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Home, Package, List, PlusCircle, Settings, Grid, BarChart, Archive, Users } from 'lucide-react'
+import { Home, Package, List, PlusCircle, Settings, BarChart, Archive, Users } from 'lucide-react'
 
 export default function AdminSidebar() {
     const [, navigate] = useLocation()
@@ -60,14 +60,8 @@ export default function AdminSidebar() {
                         </SidebarGroup>
 
                         <SidebarGroup>
-                            <SidebarGroupLabel>Quản lý cửa hàng</SidebarGroupLabel>
+                            <SidebarGroupLabel>Quản lý bán hàng</SidebarGroupLabel>
                             <SidebarMenu>
-                                <SidebarMenuItem>
-                                    <SidebarMenuButton onClick={() => navigate('/admin/branches')} isActive={window.location.pathname === '/admin/branches'}>
-                                        <Grid className="w-4 h-4" />
-                                        <span>Chi nhánh</span>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
                                 <SidebarMenuItem>
                                     <SidebarMenuButton onClick={() => navigate('/admin/orders')} isActive={window.location.pathname === '/admin/orders'}>
                                         <Archive className="w-4 h-4" />

@@ -2,8 +2,8 @@ import { createContext, useContext, ReactNode, useMemo, useEffect, useState, use
 import { RegisterInput, LoginInput } from '@/types/schema'
 import { useToast } from '@/hooks/use-toast'
 import { useLocation } from 'wouter'
-import { api, getAccessToken, clearTokens, storeTokens } from '@/lib'
-
+import { getAccessToken, clearTokens, storeTokens } from '@/lib'
+import { get, post } from '@/lib/axiosClient'
 interface AuthUser {
     _id: string
     username: string
@@ -74,13 +74,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             const tokenData = getAccessToken()
             if (!tokenData) {
-                console.log('Không tìm thấy access token, người dùng chưa đăng nhập')
                 setUser(null)
                 return null
             }
             setIsLoading(true)
 
-            const response = (await api.auth.getProfile()) as any
+            const response: any = await get('/auth/me')
 
             let userData = null
             if (response && typeof response === 'object') {
@@ -120,7 +119,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             const token = getAccessToken()
             if (!token) {
-                console.log('checkAuth: Không có token')
                 return null
             }
 
@@ -145,7 +143,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             setIsLoading(true)
 
-            const response = (await api.auth.login(credentials)) as any
+            const response = (await post('/auth/login', credentials)) as any
 
             const accessToken = response?.accessToken || response?.token || response?.data?.accessToken || response?.data?.token
             const refreshToken = response?.refreshToken || response?.data?.refreshToken
@@ -205,7 +203,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const register = async (userData: RegisterInput): Promise<RegisterResponse> => {
         try {
             setIsLoading(true)
-            const response = (await api.auth.register(userData)) as any as RegisterResponse
+            const response: RegisterResponse = await post('/auth/register', userData)
 
             toast({
                 title: 'Đăng ký thành công',
@@ -229,13 +227,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const verifyEmail = async (code: string): Promise<VerificationResponse> => {
         try {
             setIsLoading(true)
-            const response = (await api.auth.verifyEmail(code)) as any as VerificationResponse
+            const response: VerificationResponse = await post('/auth/verify-email', { code })
 
             toast({
                 title: 'Xác thực thành công',
                 description: 'Tài khoản của bạn đã được xác thực. Bạn có thể đăng nhập ngay bây giờ.',
             })
-
+            navigate('/login')
             return response
         } catch (error: any) {
             setError(error)
@@ -253,7 +251,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const resendVerification = async (email: string): Promise<VerificationResponse> => {
         try {
             setIsLoading(true)
-            const response = (await api.auth.resendVerification(email)) as any as VerificationResponse
+            const response: VerificationResponse = await post('/auth/resend-verification', { email })
 
             toast({
                 title: 'Gửi email xác thực thành công',
@@ -277,8 +275,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const logout = async (): Promise<void> => {
         try {
             setIsLoading(true)
-            console.log('Đang đăng xuất...')
-            await api.auth.logout()
+            await post('/auth/logout')
             clearTokens()
             setUser(null)
 

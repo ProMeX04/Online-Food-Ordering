@@ -1,4 +1,3 @@
-import { NextFunction } from "express";
 import { Request, Response } from "express";
 import UserProfileService from "@/services/user-profile.service";
 import { sendError, sendSuccess } from "@/utils/responseUtils";
@@ -54,55 +53,55 @@ export default class UserProfileController {
     static async addAddress(req: Request, res: Response): Promise<void> {
         try {
             const updatedProfile = await UserProfileService.addAddress(req.user?.id, req.body)
-            sendSuccess(res, updatedProfile, "Add address successfully", 200)
+            sendSuccess(res, updatedProfile, "Thêm địa chỉ thành công")
         } catch (err: any) {
-            sendError(res, "Add address failed", 500)
+            sendError(res, "Thêm địa chỉ thất bại", 500)
         }
     }
 
     static async updateAddress(req: Request, res: Response): Promise<void> {
         try {
-            const addressIndex = parseInt(req.params.addressId)
+            const addressIndex = parseInt(req.params.addressIndex)
             if (isNaN(addressIndex)) {
                 throw new Error("Index địa chỉ không hợp lệ")
             }
             const updatedProfile = await UserProfileService.updateAddress(req.user?.id, addressIndex, req.body)
-            sendSuccess(res, updatedProfile, "Update address successfully", 200)
+            sendSuccess(res, updatedProfile, "Cập nhật địa chỉ thành công")
         } catch (err: any) {
-            sendError(res, "Update address failed", 500)
+            sendError(res, "Cập nhật địa chỉ thất bại", 500)
         }
     }
 
     static async deleteAddress(req: Request, res: Response): Promise<void> {
         try {
-            const addressIndex = parseInt(req.params.addressId)
+            const addressIndex = parseInt(req.params.addressIndex)
             if (isNaN(addressIndex)) {
                 throw new Error("Index địa chỉ không hợp lệ")
             }
             const updatedProfile = await UserProfileService.deleteAddress(req.user?.id, addressIndex)
-            sendSuccess(res, updatedProfile, "Delete address successfully", 200)
+            sendSuccess(res, updatedProfile, "Xóa địa chỉ thành công")
         } catch (err: any) {
-            sendError(res, "Delete address failed", 500)
+            sendError(res, "Xóa địa chỉ thất bại", 500)
         }
     }
 
     static async setDefaultAddress(req: Request, res: Response): Promise<void> {
         try {
-            const addressIndex = parseInt(req.params.addressId)
+            const addressIndex = parseInt(req.params.addressIndex)
             if (isNaN(addressIndex)) {
                 throw new Error("Index địa chỉ không hợp lệ")
             }
             const updatedProfile = await UserProfileService.setDefaultAddress(req.user?.id, addressIndex)
-            sendSuccess(res, updatedProfile, "Set default address successfully", 200)
+            sendSuccess(res, updatedProfile, "Set default address thành công")
         } catch (err: any) {
-            sendError(res, "Set default address failed", 500)
+            sendError(res, "Set default address thất bại", 500)
         }
     }
 
     static async updateProfileImage(req: Request, res: Response): Promise<void> {
         try {
             if (!req.file) {
-                sendError(res, "No image file provided", 400)
+                sendError(res, "Không có file ảnh được cung cấp", 400)
                 return
             }
 
@@ -118,7 +117,7 @@ export default class UserProfileController {
                 "Cập nhật ảnh đại diện thành công"
             )
         } catch (err: any) {
-            sendError(res, "Update profile image failed", 500)
+            sendError(res, "Cập nhật ảnh đại diện thất bại", 500)
         }
     }
 }

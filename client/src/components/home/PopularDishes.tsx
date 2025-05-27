@@ -3,7 +3,7 @@ import { Link } from 'wouter'
 import { Button } from '@/components/ui/button'
 import { FoodCard } from '@/components/ui/FoodCard'
 import { Dish } from '@/types/schema'
-import { api } from '@/lib'
+import { get } from '@/lib/axiosClient'
 
 const PopularDishes: React.FC = () => {
     const [filter, setFilter] = useState<'popular' | 'new'>('popular')
@@ -19,9 +19,9 @@ const PopularDishes: React.FC = () => {
             try {
                 let response: any
                 if (filter === 'popular') {
-                    response = await api.products.getPopularDishes(8)
+                    response = await get('/dishes/popular')
                 } else {
-                    response = await api.products.getDishes({ isNewDish: true, limit: 8 })
+                    response = await get('/dishes/new')
                 }
 
                 const dishesData = response.items || []
@@ -78,11 +78,11 @@ const PopularDishes: React.FC = () => {
             )}
 
             {!isLoading && !error && dishes.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {dishes.map((dish) => (
                         <FoodCard key={dish._id} dish={dish} />
-                ))}
-            </div>
+                    ))}
+                </div>
             )}
         </section>
     )

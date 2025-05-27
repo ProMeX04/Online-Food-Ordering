@@ -6,8 +6,8 @@ import { MapPin, Edit, Trash2, Star } from "lucide-react";
 interface AddressListProps {
   addresses: IAddress[];
   onEdit: (address: IAddress) => void;
-  onDelete: (addressId: string) => void;
-  onSetDefault: (addressId: string) => void;
+  onDelete: (addressIndex: number) => void;
+  onSetDefault: (addressIndex: number) => void;
 }
 
 export function AddressList({ addresses, onEdit, onDelete, onSetDefault }: AddressListProps) {
@@ -23,15 +23,10 @@ export function AddressList({ addresses, onEdit, onDelete, onSetDefault }: Addre
     );
   }
 
-  const addressesWithIndex = addresses.map((address, index) => ({
-    ...address,
-    index
-  }));
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {addressesWithIndex.map((address, index) => (
-        <Card key={index} className="relative h-full flex flex-col">
+      {addresses.map((address, index) => (
+        <Card key={address._id || index} className="relative h-full flex flex-col">
           {address.isDefault && (
             <div className="absolute top-2 right-2">
               <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
@@ -69,7 +64,7 @@ export function AddressList({ addresses, onEdit, onDelete, onSetDefault }: Addre
             <Button
               variant="outline"
               size="sm"
-              onClick={() => onDelete(index.toString())}
+              onClick={() => onDelete(index)}
             >
               <Trash2 className="h-4 w-4 mr-1" />
               Xóa
@@ -78,7 +73,7 @@ export function AddressList({ addresses, onEdit, onDelete, onSetDefault }: Addre
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => onSetDefault(index.toString())}
+                onClick={() => onSetDefault(index)}
               >
                 <Star className="h-4 w-4 mr-1" />
                 Mặc định

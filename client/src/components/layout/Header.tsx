@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/use-auth'
 import { CartoonButton } from '@/components/ui/CartoonButton'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { User as UserIcon, LogOut, UserPlus, LogIn } from 'lucide-react'
+import { User as UserIcon, LogOut, UserPlus, LogIn, History, Settings } from 'lucide-react'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 
 const Header = () => {
@@ -108,6 +108,11 @@ const Header = () => {
                                         <UserIcon className="h-4 w-4 mr-2" />
                                         Cập nhật thông tin
                                     </DropdownMenuItem>
+                                    <DropdownMenuItem className="cursor-pointer" onClick={() => navigate('/orders')}>
+                                        <History className="h-4 w-4 mr-2" />
+                                        Lịch sử mua sắm
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
                                     <DropdownMenuItem className="cursor-pointer" onClick={() => logout()}>
                                         <LogOut className="h-4 w-4 mr-2" />
                                         Đăng xuất

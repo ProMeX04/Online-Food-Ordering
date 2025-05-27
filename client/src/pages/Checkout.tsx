@@ -4,20 +4,19 @@ import { formatCurrency, SHIPPING } from '@/lib'
 import { useToast } from '@/hooks/use-toast'
 import { post } from '@/lib'
 import { Link, useLocation } from 'wouter'
-import { AddressMap } from '@/components/checkout/AddressMap'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Order } from '@/types/schema'
+import { IOrder, OrderStatus, PaymentMethod } from '@/types/schema'
+import { useAuth } from '@/hooks/use-auth'
+import { useProfile } from '@/hooks/use-profile'
+import { IAddress } from '@/types/address'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog'
+import { AddressForm } from '@/components/profile/AddressForm'
+import { PlusCircle, Edit3 } from 'lucide-react'
 
 interface CheckoutFormData {
-    customerName: string
-    customerEmail: string
-    customerPhone: string
-    address: string
-    coordinates?: [number, number] 
-    paymentMethod: 'cod' | 'bank' | 'card'
+    paymentMethod: PaymentMethod
     notes: string
 }
 
@@ -25,20 +24,43 @@ const Checkout = () => {
     const [, setLocation] = useLocation()
     const { cartItems, getCartTotal, clearCart } = useCart()
     const { toast } = useToast()
+    const { user: authUser } = useAuth()
+    const { profile, addresses, isLoading: isLoadingProfile, addAddress: addProfileAddress, fetchProfile } = useProfile()
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const [showSuccess, setShowSuccess] = useState(false)
-    const [orderId, setOrderId] = useState<string | null>(null)
-    const [addressTab, setAddressTab] = useState<'text' | 'map'>('text')
+    const [selectedAddressForCheckout, setSelectedAddressForCheckout] = useState<IAddress | null>(null)
+    const [showAddressSelectionModal, setShowAddressSelectionModal] = useState(false)
+    const [showAddAddressModal, setShowAddAddressModal] = useState(false)
+    const [isAddingAddress, setIsAddingAddress] = useState(false)
 
     const [formData, setFormData] = useState<CheckoutFormData>({
-        customerName: '',
-        customerEmail: '',
-        customerPhone: '',
-        address: '',
-        coordinates: undefined,
-        paymentMethod: 'cod',
+        paymentMethod: PaymentMethod.COD,
         notes: '',
     })
+
+    useEffect(() => {
+        if (authUser && profile) {
+            setFormData((prev) => ({
+                ...prev,
+            }))
+        }
+    }, [authUser, profile])
+
+    useEffect(() => {
+        if (addresses && addresses.length > 0 && !selectedAddressForCheckout) {
+            const defaultAddress = addresses.find((addr) => addr.isDefault)
+            const initialSelectedAddress = defaultAddress || addresses[0]
+            setSelectedAddressForCheckout(initialSelectedAddress)
+        }
+    }, [addresses, selectedAddressForCheckout])
+
+    useEffect(() => {
+        if (selectedAddressForCheckout) {
+            setFormData((prev) => ({
+                ...prev,
+                coordinates: selectedAddressForCheckout.latitude && selectedAddressForCheckout.longitude ? [selectedAddressForCheckout.latitude, selectedAddressForCheckout.longitude] : undefined,
+            }))
+        }
+    }, [selectedAddressForCheckout])
 
     const cartTotal = getCartTotal()
     const deliveryFee = SHIPPING.DELIVERY_FEE
@@ -50,20 +72,6 @@ const Checkout = () => {
             ...prev,
             [name]: value,
         }))
-    }
-
-    const handleLocationSelect = (location: { address: string; coordinates: [number, number] }) => {
-        setFormData((prev) => ({
-            ...prev,
-            address: location.address,
-            coordinates: location.coordinates,
-        }))
-
-        toast({
-            title: 'Địa chỉ đã được chọn',
-            description: 'Địa chỉ giao hàng đã được cập nhật.',
-            variant: 'default',
-        })
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -78,10 +86,26 @@ const Checkout = () => {
             return
         }
 
-        if (!formData.customerName || !formData.customerPhone || !formData.address) {
+        if (!selectedAddressForCheckout) {
             toast({
-                title: 'Thông tin không đầy đủ',
-                description: 'Vui lòng điền đầy đủ thông tin giao hàng',
+                title: 'Chưa chọn địa chỉ',
+                description: 'Vui lòng chọn địa chỉ giao hàng.',
+                variant: 'destructive',
+            })
+            return
+        }
+
+        if (
+            !selectedAddressForCheckout.fullName ||
+            !selectedAddressForCheckout.phone ||
+            !selectedAddressForCheckout.street ||
+            !selectedAddressForCheckout.ward ||
+            !selectedAddressForCheckout.district ||
+            !selectedAddressForCheckout.city
+        ) {
+            toast({
+                title: 'Thông tin địa chỉ không đầy đủ',
+                description: 'Địa chỉ được chọn thiếu thông tin quan trọng. Vui lòng kiểm tra lại hoặc chọn địa chỉ khác.',
                 variant: 'destructive',
             })
             return
@@ -90,32 +114,40 @@ const Checkout = () => {
         try {
             setIsSubmitting(true)
 
-            const orderData = {
-                customerName: formData.customerName,
-                customerEmail: formData.customerEmail,
-                customerPhone: formData.customerPhone,
-                address: formData.address,
-                coordinates: formData.coordinates,
-                total: finalTotal,
-                status: 'pending',
-                createdAt: new Date().toISOString(),
-            }
-
-            const order: Order = await post('/api/orders', orderData)
-
-            // Create order items
-            for (const item of cartItems) {
-                await post(`/api/orders/${order._id}/items`, {
+            const orderData: IOrder = {
+                orderItems: cartItems.map((item) => ({
                     dishId: item.id,
                     quantity: item.quantity,
                     price: item.price,
-                })
+                })),
+                notes: formData.notes,
+                totalAmount: finalTotal,
+                status: OrderStatus.PENDING,
+                address: selectedAddressForCheckout,
             }
 
-            setOrderId(order._id)
-            setShowSuccess(true)
+            const createdOrder = await post<IOrder>('/orders', orderData)
+
+            const paymentData = {
+                orderId: createdOrder._id,
+                amount: finalTotal,
+                paymentMethod: formData.paymentMethod,
+            }
+
+            await post('/payments', paymentData)
+
             clearCart()
+
+            if (createdOrder._id) {
+                const searchParams = new URLSearchParams({
+                    orderId: createdOrder._id,
+                    total: finalTotal.toString(),
+                    paymentMethod: formData.paymentMethod,
+                })
+                setLocation(`/order-success?${searchParams.toString()}`)
+            }
         } catch (error) {
+            console.error('Error creating order:', error)
             toast({
                 title: 'Lỗi',
                 description: 'Có lỗi xảy ra khi xử lý đơn hàng. Vui lòng thử lại sau.',
@@ -129,57 +161,51 @@ const Checkout = () => {
     useEffect(() => {
         document.title = 'Thanh toán | ViệtFood'
 
-        if (cartItems.length === 0 && !showSuccess) {
+        if (cartItems.length === 0) {
             toast({
                 title: 'Giỏ hàng trống',
                 description: 'Vui lòng thêm món ăn vào giỏ hàng trước khi thanh toán',
             })
             setLocation('/menu')
         }
-    }, [cartItems.length, showSuccess, toast, setLocation])
+    }, [cartItems.length, toast, setLocation])
 
-    if (showSuccess) {
-        return (
-            <div className="bg-gray-50 py-12">
-                <div className="container mx-auto px-4">
-                    <Card className="max-w-2xl mx-auto p-8 text-center">
-                        <div className="w-20 h-20 mx-auto bg-green-500 rounded-full flex items-center justify-center mb-6">
-                            <i className="fas fa-check text-white text-3xl"></i>
-                        </div>
-                        <h1 className="font-bold text-3xl text-neutral mb-4">Đặt Hàng Thành Công!</h1>
-                        <p className="text-lg mb-6">Cảm ơn bạn đã đặt hàng tại ViệtFood. Đơn hàng của bạn đã được ghi nhận và sẽ được xử lý trong thời gian sớm nhất.</p>
+    const handleSelectAddressFromModal = (address: IAddress) => {
+        setSelectedAddressForCheckout(address)
+        setShowAddressSelectionModal(false)
+        toast({ title: 'Địa chỉ đã được chọn', description: 'Thông tin giao hàng đã được cập nhật.' })
+    }
 
-                        <div className="mb-8 bg-gray-50 border rounded-md p-4 text-left inline-block">
-                            <p className="font-medium">
-                                Mã đơn hàng: <span className="text-primary">#{orderId}</span>
-                            </p>
-                            <p className="font-medium">
-                                Tổng thanh toán: <span className="text-primary">{formatCurrency(finalTotal)}</span>
-                            </p>
-                            <p className="font-medium">
-                                Phương thức thanh toán:{' '}
-                                <span className="text-primary">
-                                    {formData.paymentMethod === 'cod' ? 'Tiền mặt khi nhận hàng' : formData.paymentMethod === 'bank' ? 'Chuyển khoản ngân hàng' : 'Thẻ tín dụng/ghi nợ'}
-                                </span>
-                            </p>
-                        </div>
+    const handleOpenAddAddressModal = () => {
+        setShowAddressSelectionModal(false)
+        setShowAddAddressModal(true)
+    }
 
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                            <Link href="/">
-                                <Button variant="default" size="lg">
-                                    <i className="fas fa-home mr-2"></i> Về Trang Chủ
-                                </Button>
-                            </Link>
-                            <Link href="/menu">
-                                <Button variant="outline" size="lg">
-                                    <i className="fas fa-utensils mr-2"></i> Tiếp Tục Mua Sắm
-                                </Button>
-                            </Link>
-                        </div>
-                    </Card>
-                </div>
-            </div>
-        )
+    const handleAddAddressSubmit = async (addressData: IAddress) => {
+        setIsAddingAddress(true)
+        try {
+            const newAddress = await addProfileAddress(addressData)
+
+            if (newAddress && typeof newAddress === 'object' && '_id' in newAddress) {
+                setSelectedAddressForCheckout(newAddress as IAddress)
+            } else {
+                await fetchProfile()
+            }
+
+            toast({
+                title: 'Thêm địa chỉ thành công',
+                description: 'Địa chỉ mới đã được thêm và chọn.',
+            })
+            setShowAddAddressModal(false)
+        } catch (error: any) {
+            toast({
+                title: 'Thêm địa chỉ thất bại',
+                description: error.message || 'Có lỗi xảy ra.',
+                variant: 'destructive',
+            })
+        } finally {
+            setIsAddingAddress(false)
+        }
     }
 
     return (
@@ -195,78 +221,46 @@ const Checkout = () => {
                         <Card className="p-6">
                             <h2 className="font-bold text-xl mb-6">Thông Tin Giao Hàng</h2>
 
+                            {isLoadingProfile && !selectedAddressForCheckout && <div className="mb-4 p-4 border rounded-md animate-pulse bg-gray-100 h-20"></div>}
+
+                            {selectedAddressForCheckout && (
+                                <div className="mb-6 p-4 border border-primary/50 rounded-md bg-primary/5">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <h3 className="font-semibold text-lg mb-1 text-primary">Giao đến địa chỉ:</h3>
+                                            <p className="font-medium">
+                                                {selectedAddressForCheckout.fullName} - {selectedAddressForCheckout.phone}
+                                            </p>
+                                            <p className="text-sm text-gray-700">
+                                                {`${selectedAddressForCheckout.street}, ${selectedAddressForCheckout.ward}, ${selectedAddressForCheckout.district}, ${selectedAddressForCheckout.city}`}
+                                            </p>
+                                            {selectedAddressForCheckout.isDefault && <span className="text-xs text-green-600 font-semibold">(Mặc định)</span>}
+                                        </div>
+                                        <Button variant="outline" size="sm" onClick={() => setShowAddressSelectionModal(true)} className="ml-4 flex-shrink-0">
+                                            <Edit3 className="w-4 h-4 mr-1" /> Thay đổi
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {!selectedAddressForCheckout && !isLoadingProfile && addresses && addresses.length > 0 && (
+                                <div className="mb-6">
+                                    <Button onClick={() => setShowAddressSelectionModal(true)} variant="default" className="w-full">
+                                        <PlusCircle className="w-4 h-4 mr-2" /> Chọn địa chỉ giao hàng
+                                    </Button>
+                                </div>
+                            )}
+
+                            {!selectedAddressForCheckout && !isLoadingProfile && (!addresses || addresses.length === 0) && (
+                                <div className="mb-6 p-4 border border-dashed rounded-md text-center">
+                                    <p className="text-muted-foreground mb-2">Bạn chưa có địa chỉ nào.</p>
+                                    <Button onClick={() => setShowAddAddressModal(true)} variant="default" size="sm">
+                                        <PlusCircle className="w-4 h-4 mr-2" /> Thêm địa chỉ mới ngay
+                                    </Button>
+                                </div>
+                            )}
+
                             <form onSubmit={handleSubmit} className="space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label className="block text-neutral font-medium mb-2">Họ tên *</label>
-                                        <input
-                                            type="text"
-                                            name="customerName"
-                                            value={formData.customerName}
-                                            onChange={handleChange}
-                                            className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                            placeholder="Nguyễn Văn A"
-                                            disabled={isSubmitting}
-                                            required
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-neutral font-medium mb-2">Số điện thoại *</label>
-                                        <input
-                                            type="tel"
-                                            name="customerPhone"
-                                            value={formData.customerPhone}
-                                            onChange={handleChange}
-                                            className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                            placeholder="0912 345 678"
-                                            disabled={isSubmitting}
-                                            required
-                                        />
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="block text-neutral font-medium mb-2">Email</label>
-                                    <input
-                                        type="email"
-                                        name="customerEmail"
-                                        value={formData.customerEmail}
-                                        onChange={handleChange}
-                                        className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                        placeholder="example@email.com"
-                                        disabled={isSubmitting}
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-neutral font-medium mb-2">Địa chỉ giao hàng *</label>
-
-                                    <Tabs defaultValue="text" className="w-full" value={addressTab} onValueChange={(value) => setAddressTab(value as 'text' | 'map')}>
-                                        <TabsList className="mb-4">
-                                            <TabsTrigger value="text">Nhập địa chỉ</TabsTrigger>
-                                            <TabsTrigger value="map">Chọn trên bản đồ</TabsTrigger>
-                                        </TabsList>
-
-                                        <TabsContent value="text">
-                                            <input
-                                                type="text"
-                                                name="address"
-                                                value={formData.address}
-                                                onChange={handleChange}
-                                                className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                                placeholder="Số nhà, đường, phường/xã, quận/huyện, thành phố"
-                                                disabled={isSubmitting}
-                                                required
-                                            />
-                                        </TabsContent>
-
-                                        <TabsContent value="map">
-                                            <AddressMap onLocationSelect={handleLocationSelect} defaultAddress={formData.address} />
-                                        </TabsContent>
-                                    </Tabs>
-                                </div>
-
                                 <div>
                                     <label className="block text-neutral font-medium mb-2">Ghi chú</label>
                                     <textarea
@@ -297,40 +291,6 @@ const Checkout = () => {
                                             <label htmlFor="cod" className="flex items-center cursor-pointer flex-1">
                                                 <i className="fas fa-money-bill-wave text-green-500 mr-2"></i>
                                                 <span>Thanh toán khi nhận hàng (COD)</span>
-                                            </label>
-                                        </div>
-
-                                        <div className="border p-4 rounded-md bg-white flex items-center">
-                                            <input
-                                                type="radio"
-                                                id="bank"
-                                                name="paymentMethod"
-                                                value="bank"
-                                                checked={formData.paymentMethod === 'bank'}
-                                                onChange={handleChange}
-                                                className="mr-3"
-                                                disabled={isSubmitting}
-                                            />
-                                            <label htmlFor="bank" className="flex items-center cursor-pointer flex-1">
-                                                <i className="fas fa-university text-blue-500 mr-2"></i>
-                                                <span>Chuyển khoản ngân hàng</span>
-                                            </label>
-                                        </div>
-
-                                        <div className="border p-4 rounded-md bg-white flex items-center">
-                                            <input
-                                                type="radio"
-                                                id="card"
-                                                name="paymentMethod"
-                                                value="card"
-                                                checked={formData.paymentMethod === 'card'}
-                                                onChange={handleChange}
-                                                className="mr-3"
-                                                disabled={isSubmitting}
-                                            />
-                                            <label htmlFor="card" className="flex items-center cursor-pointer flex-1">
-                                                <i className="fas fa-credit-card text-purple-500 mr-2"></i>
-                                                <span>Thẻ tín dụng/ghi nợ</span>
                                             </label>
                                         </div>
                                     </div>
@@ -421,6 +381,58 @@ const Checkout = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Address Selection Modal */}
+            <Dialog open={showAddressSelectionModal} onOpenChange={setShowAddressSelectionModal}>
+                <DialogContent className="sm:max-w-[525px]">
+                    <DialogHeader>
+                        <DialogTitle>Chọn địa chỉ giao hàng</DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4">
+                        {addresses && addresses.length > 0 ? (
+                            <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
+                                {addresses.map((addr, index) => (
+                                    <div
+                                        key={index}
+                                        className={`p-4 border rounded-md cursor-pointer hover:border-primary transition-all
+                                            ${selectedAddressForCheckout?._id === addr._id ? 'border-primary bg-primary/5 ring-2 ring-primary' : 'border-gray-200'}
+                                        `}
+                                        onClick={() => handleSelectAddressFromModal(addr)}
+                                    >
+                                        <p className="font-semibold text-base">
+                                            {addr.fullName} - {addr.phone}
+                                        </p>
+                                        <p className="text-sm text-gray-600">{`${addr.street}, ${addr.ward}, ${addr.district}, ${addr.city}`}</p>
+                                        {addr.isDefault && <span className="text-xs text-green-600 font-semibold mt-1 inline-block">(Mặc định)</span>}
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-muted-foreground text-center py-4">Không có địa chỉ nào được lưu.</p>
+                        )}
+                    </div>
+                    <DialogFooter className="sm:justify-between flex-col-reverse sm:flex-row gap-2 sm:gap-0">
+                        <Button onClick={handleOpenAddAddressModal} variant="outline">
+                            <PlusCircle className="w-4 h-4 mr-2" /> Thêm địa chỉ mới
+                        </Button>
+                        <DialogClose asChild>
+                            <Button type="button" variant="secondary">
+                                Đóng
+                            </Button>
+                        </DialogClose>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Add Address Modal */}
+            <Dialog open={showAddAddressModal} onOpenChange={setShowAddAddressModal}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Thêm địa chỉ mới</DialogTitle>
+                    </DialogHeader>
+                    <AddressForm onSubmit={handleAddAddressSubmit} onCancel={() => setShowAddAddressModal(false)} isSubmitting={isAddingAddress} />
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

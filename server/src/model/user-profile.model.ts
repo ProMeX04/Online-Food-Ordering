@@ -3,7 +3,6 @@ import { AddressSchema, IAddress } from "./address.model";
 import { Gender } from "@shared/enum";
 
 
-
 export interface IUserProfile {
     user: Types.ObjectId
     fullName: string

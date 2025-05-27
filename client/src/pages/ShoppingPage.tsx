@@ -4,7 +4,7 @@ import { DishList } from '@/components/shop/DishList'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 import { Link } from 'wouter'
 import { Category } from '@/types/schema'
-import { get } from '@/lib/http-client'
+import { get } from '@/lib/axiosClient'
 
 export default function ShoppingPage() {
     const { slug } = useParams()

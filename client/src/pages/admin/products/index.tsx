@@ -23,7 +23,7 @@ import { Dish, Category } from '@/types/schema'
 import { Pencil, Trash2, Search, Plus, Filter } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
-import AdminLayout from './AdminLayout'
+import AdminLayout from '../AdminLayout'
 
 export default function ProductsPage() {
     const { toast } = useToast()
@@ -40,7 +40,6 @@ export default function ProductsPage() {
     const [sortBy, setSortBy] = useState<string>('-createdAt')
     const [totalPages, setTotalPages] = useState(0)
 
-    // Tìm kiếm tự động
     useEffect(() => {
         const delaySearchTimeout = setTimeout(() => {
             if (searchInput !== searchQuery) {
@@ -51,58 +50,56 @@ export default function ProductsPage() {
 
         return () => clearTimeout(delaySearchTimeout)
     }, [searchInput, searchQuery])
+    const fetchData = async (currentPage: number, itemsPerPage: number, sortBy: string, selectedCategory: string, searchQuery: string) => {
+        setIsLoading(true)
+        try {
+            let queryParams = `?page=${currentPage}&limit=${itemsPerPage}`
+
+            if (sortBy) {
+                queryParams += `&sortBy=${sortBy}`
+            }
+
+            if (selectedCategory && selectedCategory !== 'all') {
+                queryParams += `&category=${selectedCategory}`
+            }
+
+            if (searchQuery) {
+                queryParams += `&searchTerm=${searchQuery}`
+            }
+
+            const response = (await get(`/dishes${queryParams}`)) as {
+                items: Dish[]
+                total: number
+                page: string
+                limit: string
+                totalPages: number
+            }
+
+            setDishes(response.items || [])
+            setTotalItems(response.total || 0)
+            setCurrentPage(parseInt(response.page) || 1)
+            const pages = response.totalPages || Math.ceil((response.total || 0) / parseInt(response.limit))
+            if (pages > 0) {
+                setTotalPages(pages)
+            }
+
+            const categoriesResponse: Category[] = await get('/categories')
+            setCategories(categoriesResponse)
+        } catch (error) {
+            console.error('Error fetching data:', error)
+            toast({
+                title: 'Lỗi',
+                description: 'Không thể tải dữ liệu món ăn. Vui lòng thử lại sau.',
+                variant: 'destructive',
+            })
+        } finally {
+            setIsLoading(false)
+        }
+    }
 
     useEffect(() => {
-        const fetchData = async () => {
-            setIsLoading(true)
-            try {
-                let queryParams = `?page=${currentPage}&limit=10`
-
-                if (sortBy) {
-                    queryParams += `&sortBy=${sortBy}`
-                }
-
-                if (selectedCategory && selectedCategory !== 'all') {
-                    queryParams += `&category=${selectedCategory}`
-                }
-
-                if (searchQuery) {
-                    queryParams += `&searchTerm=${searchQuery}`
-                }
-
-                const response = (await get(`/dishes${queryParams}`)) as {
-                    items: Dish[]
-                    total: number
-                    page: string
-                    limit: string
-                    totalPages: number
-                }
-
-                setDishes(response.items || [])
-                setTotalItems(response.total || 0)
-                setCurrentPage(parseInt(response.page) || 1)
-                // Cập nhật tổng số trang từ API thay vì tính toán ở client
-                const pages = response.totalPages || Math.ceil((response.total || 0) / parseInt(response.limit))
-                if (pages > 0) {
-                    setTotalPages(pages)
-                }
-
-                const categoriesResponse: Category[] = await get('/categories')
-                setCategories(categoriesResponse)
-            } catch (error) {
-                console.error('Error fetching data:', error)
-                toast({
-                    title: 'Lỗi',
-                    description: 'Không thể tải dữ liệu món ăn. Vui lòng thử lại sau.',
-                    variant: 'destructive',
-                })
-            } finally {
-                setIsLoading(false)
-            }
-        }
-
-        fetchData()
-    }, [currentPage, itemsPerPage, sortBy, selectedCategory, searchQuery, toast])
+        fetchData(currentPage, itemsPerPage, sortBy, selectedCategory, searchQuery)
+    }, [currentPage, itemsPerPage, sortBy, selectedCategory, searchQuery])
 
     const handleDeleteDish = async (id: string) => {
         try {
@@ -352,14 +349,13 @@ export default function ProductsPage() {
                                                 </div>
                                             </TableCell>
                                             <TableCell>{getCategoryName(dish.category)}</TableCell>
-                        
+
                                             <TableCell className="text-center">{dish.soldCount || 0}</TableCell>
                                             <TableCell className="text-center">
                                                 <div className="flex items-center justify-center">
                                                     <span className="font-medium mr-1">{dish.rating !== undefined ? Number(dish.rating).toFixed(1) : '0.0'}</span>
                                                     <i className="fas fa-star text-yellow-400 text-xs"></i>
                                                 </div>
-
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex justify-center">

@@ -1,7 +1,7 @@
 import { IUser } from "@model/user.model"
 import UserService from "@services/user.service"
 import { Request, Response } from "express"
-import { sendError, sendSuccess } from "@utils/responseUtils"
+import { sendError, sendPaginatedSuccess, sendSuccess } from "@utils/responseUtils"
 
 
 export default class UserController {
@@ -10,8 +10,8 @@ export default class UserController {
         res: Response,
     ): Promise<void> {
         try {
-            const listUser: IUser[] | null = await UserService.findAllUsers()
-            sendSuccess(res, listUser)
+            const { users, limit, page, total, totalPages } = await UserService.findAllUsers(req.query)
+            sendPaginatedSuccess(res, users, total, page, limit, totalPages)
         } catch (err) {
             sendError(res, "Get list user failed", 500)
         }
@@ -50,8 +50,8 @@ export default class UserController {
         res: Response,
     ): Promise<void> {
         try {
-            const user: IUser = req.body    
-            const updatedUser = await UserService.updateUser(req.user?.id, user)
+            const user: IUser = req.body
+            const updatedUser = await UserService.updateUser(req.params.id, user)
             sendSuccess(res, updatedUser)
         } catch (err) {
             sendError(res, "Update user failed", 500)

@@ -9,6 +9,8 @@ export interface IAddress {
   note?: string;
   isDefault?: boolean;
   index?: number;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface IAddressUpdate {

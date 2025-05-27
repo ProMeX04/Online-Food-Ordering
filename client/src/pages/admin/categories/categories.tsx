@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { get, put } from '@/lib/http-client'
+import { get, put, post, del } from '@/lib/axiosClient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -24,8 +24,7 @@ import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { api } from '@/lib'
-import AdminLayout from './AdminLayout'
+import AdminLayout from '../AdminLayout'
 
 const categoryFormSchema = z.object({
     name: z.string().min(2, 'Tên danh mục phải có ít nhất 2 ký tự'),
@@ -56,18 +55,8 @@ export default function CategoriesPage() {
     const fetchCategories = async () => {
         setIsLoading(true)
         try {
-            const response = await get('/categories')
-
-            // Handle different response formats
-            const categoriesData = Array.isArray(response) ? response : (response as any)?.categories || []
-
-            // Map the data to ensure count property exists
-            const mappedCategories = categoriesData.map((cat: any) => ({
-                ...cat,
-                count: cat.count || 0,
-            }))
-
-            setCategories(mappedCategories as Category[])
+            const response = await get<Category[]>('/categories')
+            setCategories(response)
         } catch (error) {
             console.error('Error fetching categories:', error)
             toast({
@@ -110,7 +99,7 @@ export default function CategoriesPage() {
                     description: 'Đã cập nhật danh mục thành công',
                 })
             } else {
-                await api.products.createCategory(values)
+                await post('/categories', values)
                 toast({
                     title: 'Thành công',
                     description: 'Đã thêm danh mục mới thành công',
@@ -133,7 +122,7 @@ export default function CategoriesPage() {
 
     const handleDeleteCategory = async (id: string) => {
         try {
-            await api.products.deleteCategory(id)
+            await del(`/categories/${id}`)
             toast({
                 title: 'Xóa thành công',
                 description: 'Danh mục đã được xóa thành công',
@@ -361,4 +350,3 @@ export default function CategoriesPage() {
         </AdminLayout>
     )
 }
- 

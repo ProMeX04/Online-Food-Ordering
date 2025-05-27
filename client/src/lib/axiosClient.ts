@@ -7,8 +7,8 @@ interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
     _retry?: boolean;
 }
 
-class HttpClient {
-    private static instance: HttpClient;
+class AxiosClient {
+    private static instance: AxiosClient;
     private axiosInstance: AxiosInstance;
     private isRefreshing = false;
     private failedQueue: Array<{ resolve: Function; reject: Function }> = [];
@@ -25,11 +25,11 @@ class HttpClient {
         this.setupInterceptors();
     }
 
-    public static getInstance(): HttpClient {
-        if (!HttpClient.instance) {
-            HttpClient.instance = new HttpClient();
+    public static getInstance(): AxiosClient {
+        if (!AxiosClient.instance) {
+            AxiosClient.instance = new AxiosClient();
         }
-        return HttpClient.instance;
+        return AxiosClient.instance;
     }
 
     public getAxiosInstance(): AxiosInstance {
@@ -173,27 +173,25 @@ class HttpClient {
     }
 }
 
-// Singleton instance
-const httpClient = HttpClient.getInstance().getAxiosInstance();
+const axiosClient = AxiosClient.getInstance().getAxiosInstance();
 
-// Các hàm tiện ích để gọi API
 export const get = async <T>(url: string, config?: AxiosRequestConfig): Promise<T> => {
-    const response = await httpClient.get<T>(url, config);
+    const response = await axiosClient.get<T>(url, config);
     return response.data;
 };
 
 export const post = async <T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
-    const response = await httpClient.post<T>(url, data, config);
+    const response = await axiosClient.post<T>(url, data, config);
     return response.data;
 };
 
 export const put = async <T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
-    const response = await httpClient.put<T>(url, data, config);
+    const response = await axiosClient.put<T>(url, data, config);
     return response.data;
 };
 
 export const del = async <T>(url: string, config?: AxiosRequestConfig): Promise<T> => {
-    const response = await httpClient.delete<T>(url, config);
+    const response = await axiosClient.delete<T>(url, config);
     return response.data;
 };
 
@@ -202,7 +200,7 @@ export const upload = async <T>(
     formData: FormData,
     config?: AxiosRequestConfig & { onUploadProgress?: (progressEvent: any) => void }
 ): Promise<T> => {
-    const response = await httpClient.post<T>(url, formData, {
+    const response = await axiosClient.post<T>(url, formData, {
         ...config,
         headers: {
             ...config?.headers,
@@ -212,4 +210,4 @@ export const upload = async <T>(
     return response.data;
 };
 
-export default httpClient; 
+export default axiosClient; 

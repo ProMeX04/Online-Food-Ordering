@@ -40,8 +40,13 @@ export default class UserService {
         return deletedUser;
     }
 
-    static async findAllUsers() {
-        return User.find();
+    static async findAllUsers(query: any) {
+        const { page = 1, limit = 10, sort = { createdAt: -1 } } = query
+        const skip = (page - 1) * limit
+        const users = await User.find().sort(sort).skip(skip).limit(limit)
+        const total = await User.countDocuments()
+        const totalPages = Math.ceil(total / limit)
+        return { users, limit, page, total, totalPages }
     }
 }
 

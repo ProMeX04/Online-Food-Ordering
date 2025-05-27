@@ -18,7 +18,7 @@ export const REDIS_PORT = Number(process.env.REDIS_PORT) || 6379
 export const ELASTICSEARCH_NODE = process.env.ELASTICSEARCH_NODE || "http://localhost:9200"
 export const ELASTICSEARCH_USERNAME = process.env.ELASTICSEARCH_USERNAME
 export const ELASTICSEARCH_PASSWORD = process.env.ELASTICSEARCH_PASSWORD
-
+export const AUTO_SYNC_ELASTICSEARCH = process.env.AUTO_SYNC_ELASTICSEARCH || "false"
 export const EMAIL_USERNAME = process.env.EMAIL_USERNAME || ""
 export const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD || ""
 

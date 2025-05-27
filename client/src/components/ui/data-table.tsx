@@ -1,5 +1,5 @@
 import React from "react"
-import { ColumnDef, flexRender, getCoreRowModel, useReactTable, getPaginationRowModel, SortingState, getSortedRowModel } from "@tanstack/react-table"
+import { ColumnDef, flexRender, useReactTable, getPaginationRowModel, SortingState, getSortedRowModel, getCoreRowModel } from "@tanstack/react-table"
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
@@ -24,10 +24,8 @@ export function DataTable<TData, TValue>({ columns, data, isLoading = false, sea
 	// Lọc dữ liệu dựa trên giá trị tìm kiếm
 	const filteredData = React.useMemo(() => {
 		if (!searchValue || !searchColumn) return data
-
 		return data.filter((item) => {
-			// @ts-expect-error: Dynamic access to properties
-			const value = item[searchColumn]
+			const value = item[searchColumn as keyof typeof item]
 			if (typeof value === "string") {
 				return value.toLowerCase().includes(searchValue.toLowerCase())
 			}

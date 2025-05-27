@@ -60,7 +60,7 @@ const HeroSection = () => {
                     <div className="md:w-1/2 relative">
                         <div className="relative overflow-hidden rounded-lg shadow-xl">
                             <img
-                                src="https://images.unsplash.com/photo-1576577445402-87406d5f055b?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+                                src="https://images.unsplash.com/photo-1526069631228-723c945bea6b?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
                                 alt="Món ăn Việt Nam"
                                 className="w-full h-auto object-cover transition-transform hover:scale-105 duration-700"
                             />

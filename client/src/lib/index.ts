@@ -13,13 +13,9 @@ export {
     put,
     del,
     upload,
-    default as httpClient
-} from './http-client';
+    default as axiosClient
+} from './axiosClient';
 
-export {
-    api,
-    default as apiService
-} from './api';
 
 export {
     formatCurrency,

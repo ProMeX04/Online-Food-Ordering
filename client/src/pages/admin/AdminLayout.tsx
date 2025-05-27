@@ -10,6 +10,7 @@ type AdminLayoutProps = {
     children: ReactNode
 }
 
+
 export default function AdminLayout({ children }: AdminLayoutProps) {
     const { user, checkAuth } = useAuth()
     const [, navigate] = useLocation()

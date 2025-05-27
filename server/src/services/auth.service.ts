@@ -59,7 +59,6 @@ export default class AuthService {
                 pass: EMAIL_PASSWORD,
             },
         })
-        console.log(EMAIL_PASSWORD, EMAIL_USERNAME)
 
         await transporter.sendMail({
             from: `"Food Shopping" <${EMAIL_USERNAME}>`,
@@ -297,7 +296,6 @@ export default class AuthService {
 
         await redis.set(`reset:${resetToken}`, (user.id).toString(), 'EX', RESET_PASSWORD_EXPIRE)
 
-        console.log(`Reset password token for ${email}: ${resetToken}`)
 
         const transporter = nodemailer.createTransport({
             service: 'gmail',
@@ -405,6 +403,4 @@ export default class AuthService {
         user.password = newPassword
         await user.save()
     }
-
-    
 }

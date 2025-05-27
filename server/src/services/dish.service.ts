@@ -3,7 +3,7 @@ import {
 } from "@/model/dish.model"
 import DishModel from "@/model/dish.model"
 import redis from "@/config/redis"
-import SearchService from "@/services/search.service"
+import SearchService from "@/services/search-dishes.service"
 import { IDishDocument } from "@/model/dish.model"
 import { Types } from "mongoose"
 import fs from 'fs'
@@ -132,7 +132,6 @@ export default class DishService {
         }
 
         const dish = await DishModel.findById(id).lean()
-        console.log(dish)
 
         if (dish) {
             await redis.set(cacheKey, JSON.stringify(dish))
@@ -146,7 +145,6 @@ export default class DishService {
     ): Promise<IDish> => {
         const newDish = await DishModel.create(dishData)
         await DishService.updateCacheAndElasticsearch(newDish.id, newDish)
-
         return newDish
     }
 

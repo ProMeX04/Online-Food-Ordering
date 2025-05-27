@@ -13,7 +13,7 @@ import { ChevronLeft, Loader2, Upload, Image as ImageIcon } from 'lucide-react'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
-import { get, post } from '@/lib/http-client'
+import { get, post } from '@/lib/axiosClient'
 import AdminLayout from '../AdminLayout'
 
 const formSchema = z.object({

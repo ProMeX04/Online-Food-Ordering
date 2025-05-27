@@ -6,11 +6,11 @@ export interface IAddress {
     city: string;
     district: string;
     ward: string;
-    street: string;
-    note: string;
+    street?: string;
+    note?: string;
     isDefault: boolean;
-    latitude: number;
-    longitude: number;
+    latitude?: number;
+    longitude?: number;
 }
 
 export interface IAddressDocument extends IAddress, mongoose.Document { }
@@ -21,7 +21,7 @@ export const AddressSchema = new mongoose.Schema({
     city: { type: String, required: true },
     district: { type: String, required: true },
     ward: { type: String, required: true },
-    street: { type: String, required: true },
+    street: { type: String },
     note: { type: String },
     isDefault: { type: Boolean, default: false },
     latitude: { type: Number },

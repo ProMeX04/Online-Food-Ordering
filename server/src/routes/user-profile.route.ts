@@ -50,11 +50,10 @@ router.delete("/profile", authenticate, UserProfileController.deleteProfile)
 router.post("/profile/image", authenticate, upload.single('image'), processImage, UserProfileController.updateProfileImage)
 
 router.post("/addresses", authenticate, UserProfileController.addAddress)
-router.put("/addresses/:addressId", authenticate, UserProfileController.updateAddress)
-router.delete("/addresses/:addressId", authenticate, UserProfileController.deleteAddress)
-router.put("/addresses/:addressId/default", authenticate, UserProfileController.setDefaultAddress)
+router.put("/addresses/:addressIndex", authenticate, UserProfileController.updateAddress)
+router.delete("/addresses/:addressIndex", authenticate, UserProfileController.deleteAddress)
+router.put("/addresses/:addressIndex/default", authenticate, UserProfileController.setDefaultAddress)
 
-router.get("/:id", UserController.getUserDetail)
-router.get("/", UserController.getListUser)
+
 
 export default router

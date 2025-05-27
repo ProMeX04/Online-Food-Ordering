@@ -1,7 +1,6 @@
 import CategoryService from "@/services/category.service"
-import { sendError } from "@/utils/responseUtils"
-import { Request, Response, NextFunction } from "express"
-import { sendSuccess } from "@/utils/responseUtils"
+import { sendError, sendSuccess } from "@/utils/responseUtils"
+import { Request, Response } from "express"
 import { ICategory } from "@/model/category.model"
 
 export default class CategoryController {
@@ -46,12 +45,12 @@ export default class CategoryController {
         try {
             const name = req.query.name as string
             if (!name) {
-                res.status(400).json({ message: "Tên danh mục tìm kiếm không được để trống" })
+                sendError(res, "Tên danh mục tìm kiếm không được để trống", 400)
                 return
             }
 
             const categories = await CategoryService.searchByName(name)
-            res.status(200).json(categories)
+            sendSuccess(res, categories)
         } catch (error) {
             sendError(res, (error as Error).message)
         }
@@ -59,15 +58,13 @@ export default class CategoryController {
 
     static async getPopularCategories(req: Request, res: Response): Promise<void> {
         try {
-            const limit = req.query.limit ? parseInt(req.query.limit as string) : 10
+            const limit = Number(req.query.limit) || 10
             const categories = await CategoryService.getPopular(limit)
             sendSuccess(res, categories)
         } catch (error) {
             sendError(res, (error as Error).message)
         }
     }
-
-
 
     static async createCategory(req: Request, res: Response): Promise<void> {
         try {
@@ -79,8 +76,6 @@ export default class CategoryController {
         }
     }
 
-
-
     static async updateCategory(req: Request, res: Response): Promise<void> {
         try {
             const id = req.params.id
@@ -88,6 +83,7 @@ export default class CategoryController {
             const updatedCategory = await CategoryService.update(id, categoryData)
             if (!updatedCategory) {
                 sendError(res, "Category not found")
+                return
             }
             sendSuccess(res, updatedCategory, "Category updated successfully")
         } catch (err) {
@@ -95,14 +91,13 @@ export default class CategoryController {
         }
     }
 
-
-
     static async deleteCategory(req: Request, res: Response): Promise<void> {
         try {
             const id = req.params.id
             const deletedCategory = await CategoryService.delete(id)
             if (!deletedCategory) {
                 sendError(res, "Category not found")
+                return
             }
             sendSuccess(res, {}, "Category deleted successfully")
         } catch (err) {

@@ -60,3 +60,10 @@ export const VALIDATION_MESSAGES = {
   PASSWORD_MATCH: 'Mật khẩu không khớp',
   INVALID_PHONE: 'Vui lòng nhập đúng số điện thoại'
 };
+
+export function formatPrice(price: number) {
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(price);
+}

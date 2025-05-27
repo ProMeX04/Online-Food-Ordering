@@ -4,7 +4,6 @@ import { BACKEND_URL } from '../config'
 export const getFullImageUrl = (relativePath: string): string => {
   const path = relativePath.startsWith('/') ? relativePath.substring(1) : relativePath
   const backendBaseUrl = BACKEND_URL.replace(/\/api$/, '')
-
   return `${backendBaseUrl}/${path}`
 }
 
