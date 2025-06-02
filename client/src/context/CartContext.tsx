@@ -28,21 +28,17 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   
   const addToCart = (item: CartItem) => {
     setCartItems(prevItems => {
-      // Check if item already exists
       const existingItemIndex = prevItems.findIndex(cartItem => cartItem.id === item.id);
       
       if (existingItemIndex !== -1) {
-        // Increase quantity if item exists
         const newItems = [...prevItems];
         newItems[existingItemIndex].quantity += item.quantity;
         return newItems;
       } else {
-        // Add new item
         return [...prevItems, item];
       }
     });
     
-    // Open cart when adding item
     setIsCartOpen(true);
   };
   

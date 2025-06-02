@@ -1,0 +1,142 @@
+\section{Kiến trúc tổng thể}
+
+Việt Food áp dụng kiến trúc client-server hiện đại, với sự phân chia rõ ràng giữa frontend (React) và backend (Node.js/Express). Kiến trúc này tạo nên một hệ thống linh hoạt và mạnh mẽ, mang lại nhiều lợi ích:
+
+\begin{itemize}
+    \item \textbf{Phát triển độc lập}: Các nhóm phát triển có thể làm việc song song trên frontend và backend.
+    \item \textbf{Khả năng mở rộng}: Mỗi phần có thể được mở rộng độc lập dựa trên yêu cầu cụ thể.
+    \item \textbf{Tái sử dụng API}: Backend cung cấp API RESTful có thể phục vụ nhiều client khác nhau (web, mobile).
+    \item \textbf{Bảo mật tốt hơn}: Sự tách biệt giữa frontend và backend giúp tăng cường bảo mật.
+    \item \textbf{Hiệu suất tối ưu}: Cho phép tối ưu hóa riêng biệt cho UI và xử lý dữ liệu.
+\end{itemize}
+
+\subsection{Mô hình kiến trúc}
+Hệ thống áp dụng kiến trúc MVC (Model-View-Controller) kết hợp với các dịch vụ (Services):
+
+\begin{itemize}
+    \item \textbf{Model}: Đại diện cho cấu trúc dữ liệu và xử lý logic liên quan đến dữ liệu.
+    \item \textbf{View}: Được thực hiện ở phía client, hiển thị thông tin cho người dùng.
+    \item \textbf{Controller}: Xử lý các yêu cầu từ client, tương tác với các service và trả về kết quả.
+    \item \textbf{Service}: Chứa logic nghiệp vụ, tương tác với database và các thành phần bên ngoài.
+\end{itemize}
+
+\subsection{Sơ đồ kiến trúc}
+Kiến trúc hệ thống được thiết kế với nhiều lớp:
+
+\begin{figure}[H]
+\centering
+\begin{verbatim}
++----------------+      +-------------------+      +---------------+
+|                |      |                   |      |               |
+|     Client     +----->      Backend      +----->    Database    |
+|                |      |                   |      |   (MongoDB)   |
++----------------+      +-------------------+      +---------------+
+                               |   |   |
+                               |   |   |
+                  +------------+   |   +------------+
+                  |                |                |
+         +--------v-------+  +-----v-----+  +-------v--------+
+         |                |  |           |  |                |
+         |     Redis      |  |   ElasticSearch  |  |   File Storage  |
+         |   (Caching)    |  |  (Search) |  |                |
+         +----------------+  +-----------+  +----------------+
+\end{verbatim}
+\caption{Sơ đồ kiến trúc tổng thể của hệ thống}
+\end{figure}
+
+\section{Thiết kế module/component chính}
+Cấu trúc dự án được tổ chức thành các module chức năng riêng biệt, gồm cả phần frontend và backend:
+
+\subsection{Controllers}
+Xử lý các request từ client và điều phối các thao tác:
+\begin{itemize}
+    \item \textbf{DishController}: Quản lý thông tin món ăn
+    \item \textbf{CategoryController}: Quản lý danh mục
+    \item \textbf{AuthController}: Xử lý xác thực người dùng
+    \item \textbf{MessageController}: Quản lý tin nhắn
+\end{itemize}
+
+\subsection{Services}
+Chứa logic nghiệp vụ chính:
+\begin{itemize}
+    \item \textbf{DishService}: Xử lý logic liên quan đến món ăn, bao gồm caching với Redis
+    \item \textbf{CategoryService}: Quản lý danh mục món ăn
+    \item \textbf{AuthService}: Xử lý đăng nhập, đăng ký và xác thực
+    \item \textbf{MessageWorkerService}: Xử lý tin nhắn với Redis Stream
+    \item \textbf{SearchService}: Tương tác với Elasticsearch để tìm kiếm
+\end{itemize}
+
+\subsection{Middlewares}
+Xử lý các tác vụ trung gian:
+\begin{itemize}
+    \item \textbf{Authentication}: Kiểm tra và xác thực người dùng
+    \item \textbf{ImageProcessor}: Xử lý và tối ưu hóa hình ảnh với Sharp
+    \item \textbf{Error Handler}: Xử lý lỗi thống nhất
+\end{itemize}
+
+\subsection{Models}
+Mô tả cấu trúc dữ liệu trong backend:
+\begin{itemize}
+    \item \textbf{DishModel}: Mô hình dữ liệu cho món ăn
+    \item \textbf{CategoryModel}: Mô hình dữ liệu cho danh mục
+    \item \textbf{UserModel}: Mô hình dữ liệu người dùng
+    \item \textbf{MessageModel}: Mô hình dữ liệu tin nhắn
+\end{itemize}
+
+\subsection{Frontend Components}
+Frontend được xây dựng theo kiến trúc component-based với React, tổ chức thành các thành phần:
+\begin{itemize}
+    \item \textbf{UI Components}: Các component giao diện cơ bản, được xây dựng trên Radix UI và tùy chỉnh với Tailwind CSS
+    \item \textbf{Layout Components}: Quản lý bố cục chung của ứng dụng
+    \item \textbf{Page Components}: Tương ứng với các trang trong ứng dụng
+    \item \textbf{Feature Components}: Các component chức năng đặc thù như giỏ hàng, tìm kiếm, thanh toán
+\end{itemize}
+
+\subsection{Frontend Services và Hooks}
+Phần frontend sử dụng các service và custom hooks để quản lý logic:
+\begin{itemize}
+    \item \textbf{API Services}: Xử lý các tương tác với backend thông qua axios
+    \item \textbf{Context API}: Sử dụng React Context để quản lý trạng thái toàn cục như xác thực người dùng (CartContext, AuthContext)
+    \item \textbf{Custom Hooks}: Các hooks chuyên biệt như useAuth, useCart, useProfile để đơn giản hóa quản lý trạng thái và data fetching
+    \item \textbf{Local Storage}: Lưu trữ tokens xác thực và thông tin session người dùng
+\end{itemize}
+
+\subsection{Quản lý Routing}
+Việt Food sử dụng thư viện wouter để quản lý routing trong ứng dụng, với các route chính:
+\begin{itemize}
+    \item \textbf{Public Routes}: Trang chủ, danh sách món ăn, chi tiết món ăn, tìm kiếm
+    \item \textbf{Protected Routes}: Giỏ hàng, quản lý đơn hàng, tài khoản cá nhân
+    \item \textbf{Admin Routes}: Quản lý món ăn, danh mục, người dùng và thống kê
+\end{itemize}
+
+\subsection{State Management}
+Quản lý trạng thái trong ứng dụng được thực hiện thông qua:
+\begin{itemize}
+    \item \textbf{React Context}: Quản lý trạng thái toàn cục như thông tin người dùng, giỏ hàng
+    \item \textbf{React Query}: Quản lý trạng thái server và cache dữ liệu
+    \item \textbf{Local Component State}: Quản lý trạng thái độc lập của từng component
+\end{itemize}
+
+\section{Thiết kế cơ sở dữ liệu}
+Hệ thống sử dụng MongoDB làm cơ sở dữ liệu chính với các collection chính:
+
+\begin{itemize}
+    \item \textbf{Dishes}: Lưu trữ thông tin món ăn
+    \item \textbf{Categories}: Danh mục món ăn
+    \item \textbf{Users}: Thông tin người dùng
+    \item \textbf{Messages}: Lưu trữ tin nhắn
+\end{itemize}
+
+Bên cạnh đó, hệ thống còn sử dụng:
+\begin{itemize}
+    \item \textbf{Redis}: Lưu trữ cache, quản lý phiên làm việc và xử lý tin nhắn real-time
+    \item \textbf{Elasticsearch}: Đánh chỉ mục và tìm kiếm dữ liệu nhanh chóng
+\end{itemize}
+
+\subsection{Lý do lựa chọn thiết kế}
+Việc kết hợp MongoDB, Redis và Elasticsearch cung cấp nhiều lợi thế:
+\begin{itemize}
+    \item \textbf{MongoDB}: Lưu trữ dữ liệu linh hoạt với schema động, phù hợp với ứng dụng có dữ liệu phức tạp
+    \item \textbf{Redis}: Caching hiệu quả, giảm tải cho database chính và xử lý thông tin tạm thời
+    \item \textbf{Elasticsearch}: Tìm kiếm mạnh mẽ với full-text search và ranking
+\end{itemize}

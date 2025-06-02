@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { PaymentService } from "@/services/payment.service";
 import { sendError, sendSuccess } from "@/utils/responseUtils";
-import { PaymentStatus } from "@/model/payment.model";
+import { PaymentStatus } from "@shared/enum";
 
 export default class PaymentController {
     static async createPayment(req: Request, res: Response) {

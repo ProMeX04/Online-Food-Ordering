@@ -11,7 +11,7 @@ class AxiosClient {
     private static instance: AxiosClient;
     private axiosInstance: AxiosInstance;
     private isRefreshing = false;
-    private failedQueue: Array<{ resolve: Function; reject: Function }> = [];
+    private failedQueue: Array<{ resolve: (token: string) => void; reject: (error: Error) => void }> = [];
 
     private constructor() {
         this.axiosInstance = axios.create({
@@ -36,12 +36,12 @@ class AxiosClient {
         return this.axiosInstance;
     }
 
-    private processQueue(error: any, token: string | null): void {
+    private processQueue(error: Error | null, token: string | null): void {
         this.failedQueue.forEach(promise => {
             if (token) {
                 promise.resolve(token);
             } else {
-                promise.reject(error);
+                promise.reject(error as Error);
             }
         });
         this.failedQueue = [];
@@ -160,7 +160,7 @@ class AxiosClient {
                 // Chuẩn hóa lỗi trả về
                 const errorMessage =
                     error.response?.data && typeof error.response.data === 'object' && 'message' in error.response.data
-                        ? (error.response.data as any).message
+                        ? (error.response.data as { message: string }).message
                         : error.message || 'An unexpected error occurred';
 
                 return Promise.reject({
@@ -180,12 +180,12 @@ export const get = async <T>(url: string, config?: AxiosRequestConfig): Promise<
     return response.data;
 };
 
-export const post = async <T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
+export const post = async <T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> => {
     const response = await axiosClient.post<T>(url, data, config);
     return response.data;
 };
 
-export const put = async <T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
+export const put = async <T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> => {
     const response = await axiosClient.put<T>(url, data, config);
     return response.data;
 };
@@ -198,7 +198,7 @@ export const del = async <T>(url: string, config?: AxiosRequestConfig): Promise<
 export const upload = async <T>(
     url: string,
     formData: FormData,
-    config?: AxiosRequestConfig & { onUploadProgress?: (progressEvent: any) => void }
+    config?: AxiosRequestConfig & { onUploadProgress?: (progressEvent: ProgressEvent) => void }
 ): Promise<T> => {
     const response = await axiosClient.post<T>(url, formData, {
         ...config,

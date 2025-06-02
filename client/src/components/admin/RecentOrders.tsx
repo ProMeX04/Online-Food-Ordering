@@ -1,17 +1,9 @@
 import { Badge } from '@/components/ui/badge'
-import { OrderStatus } from '../../../../shared/enum'
+import { OrderStatus } from '@/types/schema'
+import { RecentOrder } from '@/pages/admin'
 
 interface RecentOrdersProps {
-    data: {
-        _id: string
-        code: string
-        userId: {
-            fullName: string
-        }
-        status: OrderStatus
-        totalAmount: number
-        createdAt: string
-    }[]
+    data: RecentOrder[]
 }
 
 const statusMap = {
@@ -25,11 +17,11 @@ const statusMap = {
     },
     [OrderStatus.SHIPPED]: {
         label: 'Đang giao hàng',
-        variant: 'warning',
+        variant: 'outline',
     },
     [OrderStatus.DELIVERED]: {
         label: 'Đã giao',
-        variant: 'success',
+        variant: 'default',
     },
     [OrderStatus.CANCELLED]: {
         label: 'Đã hủy',
@@ -53,10 +45,10 @@ export function RecentOrders({ data }: RecentOrdersProps) {
                 <tbody>
                     {data.map((order) => (
                         <tr key={order._id} className="border-b transition-colors hover:bg-muted/50">
-                            <td className="p-4 align-middle">{order.code}</td>
-                            <td className="p-4 align-middle">{order.userId.fullName}</td>
+                            <td className="p-4 align-middle">{order._id}</td>
+                            <td className="p-4 align-middle">{order.userId.username}</td>
                             <td className="p-4 align-middle">
-                                {new Date(order.createdAt).toLocaleDateString('vi-VN', {
+                                {new Date(order?.createdAt || new Date()).toLocaleDateString('vi-VN', {
                                     year: 'numeric',
                                     month: '2-digit',
                                     day: '2-digit',
@@ -65,7 +57,7 @@ export function RecentOrders({ data }: RecentOrdersProps) {
                                 })}
                             </td>
                             <td className="p-4 align-middle">
-                                <Badge variant={statusMap[order.status].variant as any}>{statusMap[order.status].label}</Badge>
+                                <Badge variant={statusMap[order.status].variant}>{statusMap[order.status].label}</Badge>
                             </td>
                             <td className="p-4 align-middle text-right">
                                 {new Intl.NumberFormat('vi-VN', {

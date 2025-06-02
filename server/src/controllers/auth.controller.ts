@@ -83,10 +83,6 @@ export default class AuthController {
     static async verifyEmail(req: Request, res: Response) {
         try {
             const { code } = req.body
-            if (!code || typeof code !== 'string' || code.length !== 6) {
-                throw new Error('Invalid verification code')
-            }
-
             await AuthService.verifyEmailCode(code)
             sendSuccess(res, { success: true }, "Email verification successful")
         } catch (err) {

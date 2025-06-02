@@ -140,7 +140,6 @@ export default class AuthService {
 
     static verifyEmail = async (token: string): Promise<void> => {
         const pendingUserData = await redis.get(`pending:${token}`)
-
         if (!pendingUserData) {
             throw new Error('Token không hợp lệ hoặc đã hết hạn')
         }
@@ -158,7 +157,7 @@ export default class AuthService {
 
         try {
             await UserProfileService.create(newUser.id, {
-                fullName: userData.fullName || userData.username,
+                fullName: userData.fullName,
                 phone: '',
                 address: [],
                 gender: Gender.OTHER,

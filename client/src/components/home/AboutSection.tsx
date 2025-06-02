@@ -49,7 +49,7 @@ const AboutSection = () => {
                         </div>
 
                         <div className="flex flex-col sm:flex-row gap-4">
-                            <Link href="/menu">
+                            <Link href="/menu/normal-mode">
                                 <Button size="lg" className="px-6">
                                     <i className="fas fa-utensils mr-2"></i> Xem Thực Đơn
                                 </Button>

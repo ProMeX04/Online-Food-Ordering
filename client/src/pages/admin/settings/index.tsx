@@ -85,10 +85,10 @@ export default function SettingsPage() {
                 description: 'Đổi mật khẩu thành công',
             })
             passwordForm.reset()
-        } catch (error: any) {
+        } catch (error: unknown) {
             toast({
                 title: 'Lỗi',
-                description: error.response?.data?.message || 'Không thể đổi mật khẩu',
+                description: (error as Error).message || 'Không thể đổi mật khẩu',
                 variant: 'destructive',
             })
         } finally {

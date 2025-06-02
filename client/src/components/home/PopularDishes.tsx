@@ -17,16 +17,13 @@ const PopularDishes: React.FC = () => {
             setError(null)
 
             try {
-                let response: any
+                let response: Dish[]
                 if (filter === 'popular') {
                     response = await get('/dishes/popular')
                 } else {
                     response = await get('/dishes/new')
                 }
-
-                const dishesData = response.items || []
-
-                setDishes(dishesData)
+                setDishes(response)
             } catch (err) {
                 console.error('Error fetching dishes:', err)
                 setError('Không thể tải dữ liệu món ăn. Vui lòng thử lại sau.')
@@ -49,7 +46,7 @@ const PopularDishes: React.FC = () => {
                     <Button variant={filter === 'new' ? 'default' : 'outline'} onClick={() => setFilter('new')} className="rounded-full">
                         Mới
                     </Button>
-                    <Link href="/menu">
+                    <Link href="/menu/normal-mode">
                         <Button variant="link" className="text-primary">
                             Xem Tất Cả
                         </Button>

@@ -13,9 +13,9 @@ const esClient = new Client({
 const connectElasticsearch = async () => {
     try {
         await esClient.info()
-        console.log(`Elasticsearch connected: ${ELASTICSEARCH_NODE}`)
+        console.log(`✅ Elasticsearch connected: ${ELASTICSEARCH_NODE}`)
     } catch (error) {
-        console.error(' Cannot connect to Elasticsearch')
+        console.error(error)
     }
 }
 

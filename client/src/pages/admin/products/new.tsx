@@ -31,7 +31,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>
 
 export default function NewDishPage() {
-    const [, navigate] = useLocation()
+    const [, setLocation] = useLocation()
     const { toast } = useToast()
     const [categories, setCategories] = useState<Category[]>([])
     const [isLoading, setIsLoading] = useState(false)
@@ -39,8 +39,8 @@ export default function NewDishPage() {
     const [selectedImage, setSelectedImage] = useState<File | null>(null)
     const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
-    const form = useForm<FormValues>({
-        resolver: zodResolver(formSchema) as any,
+    const form = useForm({
+        resolver: zodResolver(formSchema),
         defaultValues: {
             name: '',
             description: '',
@@ -51,7 +51,7 @@ export default function NewDishPage() {
             isPopular: false,
             isNewDish: false,
             isSpecial: false,
-        },
+        } as FormValues,
     })
 
     useEffect(() => {
@@ -109,7 +109,7 @@ export default function NewDishPage() {
                 description: 'Đã thêm món ăn mới thành công',
             })
 
-            navigate('/admin/products')
+            setLocation('/admin/products')
         } catch (error) {
             console.error('Error creating dish:', error)
             toast({
@@ -128,7 +128,7 @@ export default function NewDishPage() {
                 <CardHeader className="pb-3">
                     <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
-                            <Button variant="ghost" size="icon" onClick={() => navigate('/admin/products')}>
+                            <Button variant="ghost" size="icon" onClick={() => setLocation('/admin/products')}>
                                 <ChevronLeft className="h-4 w-4" />
                             </Button>
                             <CardTitle>Thêm món ăn mới</CardTitle>
@@ -140,7 +140,7 @@ export default function NewDishPage() {
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <FormField
-                                    control={form.control as any}
+                                    control={form.control}
                                     name="name"
                                     render={({ field }) => (
                                         <FormItem>
@@ -318,7 +318,7 @@ export default function NewDishPage() {
                             </div>
 
                             <div className="flex justify-end space-x-2">
-                                <Button type="button" variant="outline" onClick={() => navigate('/admin/products')} disabled={isSubmitting}>
+                                <Button type="button" variant="outline" onClick={() => setLocation('/admin/products')} disabled={isSubmitting}>
                                     Hủy
                                 </Button>
                                 <Button type="submit" disabled={isSubmitting}>

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
-import { Category } from '@/types/schema'
+import { Category, Dish } from '@/types/schema'
 import { ChevronLeft, Loader2, Upload, Image as ImageIcon } from 'lucide-react'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -32,7 +32,7 @@ type FormValues = z.infer<typeof formSchema>
 
 export default function EditDishPage() {
     const { id } = useParams()
-    const [, navigate] = useLocation()
+    const [, setLocation] = useLocation()
     const { toast } = useToast()
     const [categories, setCategories] = useState<Category[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -41,8 +41,8 @@ export default function EditDishPage() {
     const [previewUrl, setPreviewUrl] = useState<string | null>(null)
     const [, setCurrentImageUrl] = useState<string>('')
 
-    const form = useForm<FormValues>({
-        resolver: zodResolver(formSchema) as any,
+    const form = useForm({
+        resolver: zodResolver(formSchema),
         defaultValues: {
             name: '',
             description: '',
@@ -60,7 +60,7 @@ export default function EditDishPage() {
         const fetchData = async () => {
             setIsLoading(true)
             try {
-                const dishData: any = await get(`/dishes/${id}`)
+                const dishData: Dish = await get(`/dishes/${id}`)
 
                 if (dishData) {
                     // Set form values
@@ -68,7 +68,7 @@ export default function EditDishPage() {
                         name: dishData.name,
                         description: dishData.description,
                         price: Number(dishData.price),
-                        category: dishData.category || dishData.categoryId,
+                        category: dishData.category,
                         isAvailable: dishData.isAvailable,
                         rating: Number(dishData.rating),
                         isPopular: dishData.isPopular || false,
@@ -91,7 +91,7 @@ export default function EditDishPage() {
                     description: 'Không thể tải dữ liệu món ăn. Vui lòng thử lại sau.',
                     variant: 'destructive',
                 })
-                navigate('/admin/products')
+                setLocation('/admin/products')
             } finally {
                 setIsLoading(false)
             }
@@ -100,7 +100,7 @@ export default function EditDishPage() {
         if (id) {
             fetchData()
         }
-    }, [id, form, toast, navigate])
+    }, [id, form, toast, setLocation])
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -136,7 +136,7 @@ export default function EditDishPage() {
                 description: 'Đã cập nhật món ăn thành công',
             })
 
-            navigate('/admin/products')
+            setLocation('/admin/products')
         } catch (error) {
             console.error('Error updating dish:', error)
             toast({
@@ -155,7 +155,7 @@ export default function EditDishPage() {
                 <Card className="shadow-sm border-0">
                     <CardHeader className="pb-3">
                         <div className="flex items-center gap-2">
-                            <Button variant="ghost" size="icon" onClick={() => navigate('/admin/products')} disabled>
+                            <Button variant="ghost" size="icon" onClick={() => setLocation('/admin/products')} disabled>
                                 <ChevronLeft className="h-4 w-4" />
                             </Button>
                             <CardTitle>Đang tải thông tin món ăn...</CardTitle>
@@ -177,7 +177,7 @@ export default function EditDishPage() {
                 <CardHeader className="pb-3">
                     <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
-                            <Button variant="ghost" size="icon" onClick={() => navigate('/admin/products')}>
+                            <Button variant="ghost" size="icon" onClick={() => setLocation('/admin/products')}>
                                 <ChevronLeft className="h-4 w-4" />
                             </Button>
                             <CardTitle>Chỉnh sửa món ăn</CardTitle>
@@ -370,7 +370,7 @@ export default function EditDishPage() {
 
                             {/* Buttons */}
                             <div className="flex justify-end space-x-2">
-                                <Button type="button" variant="outline" onClick={() => navigate('/admin/products')} disabled={isSubmitting}>
+                                <Button type="button" variant="outline" onClick={() => setLocation('/admin/products')} disabled={isSubmitting}>
                                     Hủy
                                 </Button>
                                 <Button type="submit" disabled={isSubmitting}>

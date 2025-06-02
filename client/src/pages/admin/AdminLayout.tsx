@@ -10,10 +10,9 @@ type AdminLayoutProps = {
     children: ReactNode
 }
 
-
 export default function AdminLayout({ children }: AdminLayoutProps) {
     const { user, checkAuth } = useAuth()
-    const [, navigate] = useLocation()
+    const [, setLocation] = useLocation()
     const { toast } = useToast()
 
     useEffect(() => {
@@ -27,7 +26,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                         description: 'Vui lòng đăng nhập để truy cập trang quản trị',
                         variant: 'destructive',
                     })
-                    navigate('/login')
+                    setLocation('/login')
                     return
                 }
 
@@ -37,7 +36,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                         description: 'Bạn không có quyền truy cập vào trang quản trị',
                         variant: 'destructive',
                     })
-                    navigate('/')
+                    setLocation('/')
                     return
                 }
             } else if (user.role !== 'admin') {
@@ -46,12 +45,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     description: 'Bạn không có quyền truy cập vào trang quản trị',
                     variant: 'destructive',
                 })
-                navigate('/login')
+                setLocation('/login')
             }
         }
 
         verifyAdminAccess()
-    }, [user, navigate, checkAuth, toast])
+    }, [user, setLocation, checkAuth, toast])
 
     return (
         <div className="h-screen w-full flex flex-col overflow-hidden">

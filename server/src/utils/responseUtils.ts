@@ -21,3 +21,11 @@ export const sendError = (res: Response, message: string, statusCode = 500): voi
   });
 };
 
+
+export const sendAIResponse = <T>(res: Response, text: string, functionResponses: T, statusCode = 200): void => {   
+  res.status(statusCode).json({
+    success: true,
+    text,
+    functionResponses,
+  });
+};

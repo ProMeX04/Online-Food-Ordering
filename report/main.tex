@@ -1,0 +1,47 @@
+\documentclass[12pt,a4paper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[vietnamese]{babel}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{minted}
+\usepackage{float}
+\usepackage{geometry}
+
+\geometry{a4paper, margin=2.5cm}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    pdftitle={Báo cáo Phân tích Dự án},
+    pdfpagemode=FullScreen,
+}
+
+\title{\textbf{BÁO CÁO THỰC TẬP CƠ SỞ\\\vspace{0.5cm}VIỆT FOOD - ỨNG DỤNG WEB ĐẶT ĐỒ ĂN VIỆT NAM}}
+\author{Lại Xuân Hiếu}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\chapter{Giới thiệu tổng quan}
+\input{chapters/chapter1}
+
+\chapter{Phân tích kiến trúc và thiết kế hệ thống}
+\input{chapters/chapter2}
+
+\chapter{Phân tích chi tiết các thành phần dự án}
+\input{chapters/chapter3}
+
+\chapter{Đánh giá hiệu quả và đề xuất cải tiến}
+\input{chapters/chapter4}
+
+\chapter{Kết luận và hướng phát triển}
+\input{chapters/chapter5}
+
+\end{document}

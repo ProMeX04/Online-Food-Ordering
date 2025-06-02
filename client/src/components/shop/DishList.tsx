@@ -33,7 +33,7 @@ export function DishList({ _id, initialFilters, categories }: DishListProps) {
     })
     const [sortBy, setSortBy] = useState<string>('popular')
     const [currentPage, setCurrentPage] = useState(1)
-    const itemsPerPage = 30
+    const itemsPerPage = 9
 
     const [dishes, setDishes] = useState<Dish[]>([])
     const [totalItems, setTotalItems] = useState(0)
@@ -110,7 +110,6 @@ export function DishList({ _id, initialFilters, categories }: DishListProps) {
             if (newDishes.length === 0) {
                 setHasMore(false)
             } else {
-                // Nối thêm dữ liệu mới vào danh sách món ăn hiện có
                 setDishes((prevDishes) => (currentPage === 1 ? newDishes : [...prevDishes, ...newDishes]))
                 setTotalItems(response.total || 0)
                 setHasMore(newDishes.length === itemsPerPage)
@@ -166,7 +165,6 @@ export function DishList({ _id, initialFilters, categories }: DishListProps) {
                         <p className="text-xs text-muted-foreground mt-1">Kết quả sẽ tự động cập nhật sau khi bạn dừng gõ</p>
                     </div>
 
-                    {/* Price Range */}
                     <div className="mb-6">
                         <Label className="mb-2 block">Khoảng giá</Label>
                         <div className="px-2">
@@ -191,10 +189,10 @@ export function DishList({ _id, initialFilters, categories }: DishListProps) {
                         <div className="mb-6">
                             <Label className="mb-2 block">Danh mục</Label>
                             <div className="space-y-2">
-                                {categories.map((category: any) => (
-                                    <Link key={category._id} href={`/menu/${category.slug}`}>
+                                {categories.map((category: Category) => (
+                                    <Link key={category._id} href={`/menu/normal-mode/${category.slug}`}>
                                         <div className="flex items-center cursor-pointer hover:text-primary">
-                                            <i className={`fas fa-${category.iconName || 'utensils'} mr-2 text-neutral/70`}></i>
+                                            <i className={`fas fa-utensils mr-2 text-neutral/70`}></i>
                                             <span>{category.name}</span>
                                         </div>
                                     </Link>

@@ -120,8 +120,8 @@ export default class DashboardController {
             const recentOrders = await Order.find()
                 .sort({ createdAt: -1 })
                 .limit(5)
-                .populate('userId', 'fullName')
-                .select('id code userId status totalAmount createdAt')
+                .populate('userId')
+            
             res.json({
                 totalOrders,
                 totalRevenue,

@@ -10,7 +10,7 @@ interface FoodCardProps {
     dish: Dish
 }
 
-export const FoodCard = ({ dish }: FoodCardProps) => {
+export const FoodCard = ({ dish }: FoodCardProps ) => {
     const [isFavorite, setIsFavorite] = useState(false)
     const { addToCart } = useCart()
 
@@ -49,7 +49,6 @@ export const FoodCard = ({ dish }: FoodCardProps) => {
                         </Button>
                     </div>
 
-                    {/* Tags */}
                     <div className="absolute top-3 left-3 flex flex-wrap gap-2">
                         {dish.isPopular && (
                             <Badge variant="default" className="bg-primary text-white font-normal">
@@ -61,6 +60,11 @@ export const FoodCard = ({ dish }: FoodCardProps) => {
                                 <i className="fas fa-certificate mr-1 text-xs"></i> Mới
                             </Badge>
                         )}
+                        {dish.isSpecial && (
+                            <Badge variant="default" className="bg-yellow-500 text-white font-normal">
+                                <i className="fas fa-star text-yellow-500"></i> Đặc biệt
+                            </Badge>
+                        )}  
                     </div>
                 </div>
 

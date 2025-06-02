@@ -7,6 +7,8 @@ import paymentRoutes from "@routes/payment.route"
 import orderRoutes from "@routes/order.route"
 import userRoutes from "@routes/user.route"
 import dashboardRoutes from "@routes/dashboard.route" 
+import chatRoutes from "@/routes/agent.route"
+
 
 const router = Router()
 
@@ -18,5 +20,5 @@ router.use("/payments", paymentRoutes)
 router.use("/orders", orderRoutes)
 router.use("/users", userRoutes)
 router.use("/admin/dashboard", dashboardRoutes)
-
+router.use("/chat", chatRoutes)
 export default router

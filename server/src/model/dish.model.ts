@@ -17,7 +17,7 @@ export interface IDish {
 
 export interface IDishDocument extends IDish, Document { }
 
-const dishSchema = new Schema<IDishDocument>(
+export const dishSchema = new Schema<IDishDocument>(
     {
         name: {
             type: String,
@@ -76,4 +76,6 @@ const dishSchema = new Schema<IDishDocument>(
     }
 )
 
-export default model<IDishDocument>("Dish", dishSchema)
+const Dish = model<IDishDocument>("Dish", dishSchema)
+
+export default Dish

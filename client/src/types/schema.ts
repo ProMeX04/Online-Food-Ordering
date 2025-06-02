@@ -33,17 +33,17 @@ export const dishSchema = z.object({
 
 export type Dish = z.infer<typeof dishSchema>;
 
-
+export const orderItemSchema = z.object({
+  dishId: z.string(),
+  quantity: z.number().min(1),
+  price: z.number().min(0)
+});
 
 export const orderSchema = z.object({
   _id: z.string(),
   userId: z.string(),
   status: z.enum(["pending", "processing", "shipped", "delivered", "cancelled"]),
-  items: z.array(z.object({
-    dishId: z.string(),
-    quantity: z.number().min(1),
-    price: z.number().min(0)
-  })),
+  items: z.array(orderItemSchema),
   totalAmount: z.number().min(0),
   shippingAddress: z.object({
     fullName: z.string().min(1, "Tên không được để trống"),
@@ -54,34 +54,13 @@ export const orderSchema = z.object({
   }),
   note: z.string().optional(),
   paymentID: z.string().optional(),
+  createdAt: z.string().or(z.date()).optional()
 });
 
+
+export type OrderItem = z.infer<typeof orderItemSchema>;
 
 export type Order = z.infer<typeof orderSchema>;
-
-export const reviewSchema = z.object({
-  _id: z.string(),
-  userId: z.string(),
-  dishId: z.string(),
-  orderId: z.string().optional(),
-  rating: z.number().min(1).max(5),
-  comment: z.string().optional(),
-  images: z.array(z.string()).optional(),
-  isVerifiedPurchase: z.boolean()
-});
-
-export type Review = z.infer<typeof reviewSchema>;
-
-export const testimonialSchema = z.object({
-  _id: z.string(),
-  userName: z.string(),
-  userAvatar: z.string().optional(),
-  rating: z.number().min(1).max(5),
-  comment: z.string(),
-  createdAt: z.string().or(z.date())
-});
-
-export type Testimonial = z.infer<typeof testimonialSchema>;
 
 export const userSchema = z.object({
   _id: z.string(),

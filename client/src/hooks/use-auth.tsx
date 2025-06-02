@@ -4,29 +4,21 @@ import { useToast } from '@/hooks/use-toast'
 import { useLocation } from 'wouter'
 import { getAccessToken, clearTokens, storeTokens } from '@/lib'
 import { get, post } from '@/lib/axiosClient'
+
 interface AuthUser {
     _id: string
     username: string
     email: string
     role: string
     isActive: boolean
-    fullName?: string
     imageUrl?: string
+    fullName?: string
 }
 
 interface LoginResponse {
-    accessToken?: string
-    token?: string
-    refreshToken?: string
-    user?: AuthUser
-    data?: {
-        accessToken?: string
-        token?: string
-        refreshToken?: string
-        user?: AuthUser
-    }
-    success?: boolean
-    message?: string
+    accessToken: string
+    refreshToken: string
+    user: AuthUser 
 }
 
 interface RegisterResponse {
@@ -64,7 +56,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const { toast } = useToast()
-    const [, navigate] = useLocation()
+    const [, setLocation] = useLocation()
 
     const [user, setUser] = useState<AuthUser | null>(null)
     const [isLoading, setIsLoading] = useState<boolean>(true)
@@ -79,18 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
             setIsLoading(true)
 
-            const response: any = await get('/auth/me')
-
-            let userData = null
-            if (response && typeof response === 'object') {
-                if (response._id || response.id) {
-                    userData = response as AuthUser
-                } else if (response.data) {
-                    userData = response.data as AuthUser
-                } else if (response.user) {
-                    userData = response.user as AuthUser
-                }
-            }
+            const userData: AuthUser = await get('/auth/me')
 
             if (userData) {
                 setUser(userData)
@@ -143,54 +124,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             setIsLoading(true)
 
-            const response = (await post('/auth/login', credentials)) as any
-
-            const accessToken = response?.accessToken || response?.token || response?.data?.accessToken || response?.data?.token
-            const refreshToken = response?.refreshToken || response?.data?.refreshToken
-
-            let userData: AuthUser | undefined
-            if (response?._id && response?.username) {
-                userData = response as AuthUser
-            } else if (response?.user) {
-                userData = response.user as AuthUser
-            } else if (response?.data?.user) {
-                userData = response.data.user as AuthUser
-            }
+            const response :LoginResponse= await post('/auth/login', credentials)
+            const accessToken = response.accessToken
+            const refreshToken = response.refreshToken
+            const user: AuthUser = response.user 
 
             if (!accessToken) {
                 throw new Error('Không nhận được access token từ server')
             }
 
-            storeTokens(accessToken, refreshToken || accessToken)
-
-            if (userData) {
-                setUser(userData)
-
-                toast({
-                    title: 'Đăng nhập thành công',
-                    description: `Chào mừng ${userData.fullName || userData.username || 'bạn'}`,
-                })
-                navigate('/')
-            } else {
-                await fetchUserProfile()
-
-                toast({
-                    title: 'Đăng nhập thành công',
-                    description: 'Chào mừng bạn đã quay trở lại!',
-                })
-
-                navigate('/')
-            }
+            storeTokens(accessToken, refreshToken)
+            setUser(user)
+            toast({
+                title: 'Đăng nhập thành công',
+                description: `Chào mừng ${user.username || 'bạn'}`,
+            })
+            setLocation('/')
+            await fetchUserProfile()
 
             return response
-        } catch (error: any) {
+        } catch (error) {
             clearTokens()
             setUser(null)
-            setError(error)
+            setError(error as Error)
 
             toast({
                 title: 'Đăng nhập thất bại',
-                description: error.message === 'Network Error' ? 'Không thể kết nối đến máy chủ.' : error.message,
+                description: (error as Error).message === 'Network Error' ? 'Không thể kết nối đến máy chủ.' : (error as Error).message,
                 variant: 'destructive',
             })
 
@@ -211,11 +171,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             })
 
             return response
-        } catch (error: any) {
-            setError(error)
+        } catch (error) {
+            setError(error as Error)
             toast({
                 title: 'Đăng ký thất bại',
-                description: error.message === 'Network Error' ? 'Không thể kết nối đến máy chủ.' : error.message,
+                description: (error as Error).message === 'Network Error' ? 'Không thể kết nối đến máy chủ.' : (error as Error).message,
                 variant: 'destructive',
             })
             throw error
@@ -233,13 +193,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 title: 'Xác thực thành công',
                 description: 'Tài khoản của bạn đã được xác thực. Bạn có thể đăng nhập ngay bây giờ.',
             })
-            navigate('/login')
+            setLocation('/login')
             return response
-        } catch (error: any) {
-            setError(error)
+        } catch (error) {
+            setError(error as Error)
             toast({
                 title: 'Xác thực thất bại',
-                description: error.message === 'Network Error' ? 'Không thể kết nối đến máy chủ.' : error.message,
+                description: (error as Error).message === 'Network Error' ? 'Không thể kết nối đến máy chủ.' : (error as Error).message,
                 variant: 'destructive',
             })
             throw error
@@ -259,11 +219,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             })
 
             return response
-        } catch (error: any) {
-            setError(error)
+        } catch (error) {
+            setError(error as Error)
             toast({
                 title: 'Gửi email xác thực thất bại',
-                description: error.message === 'Network Error' ? 'Không thể kết nối đến máy chủ.' : error.message,
+                description: (error as Error).message === 'Network Error' ? 'Không thể kết nối đến máy chủ.' : (error as Error).message,
                 variant: 'destructive',
             })
             throw error
@@ -284,8 +244,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 description: 'Bạn đã đăng xuất khỏi hệ thống.',
             })
 
-            navigate('/')
-        } catch (error: any) {
+            setLocation('/')
+        } catch (error) {
             console.error('Lỗi đăng xuất:', error)
             clearTokens()
             setUser(null)

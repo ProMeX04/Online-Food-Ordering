@@ -1,15 +1,5 @@
 import { Document, Schema, model, Types } from "mongoose"
-
-export enum PaymentStatus {
-    PENDING = "pending",
-    SUCCESS = "success",
-    FAILED = "failed",
-}
-
-export enum PaymentMethod {
-    COD = "cod",
-    MOMO = "momo"
-}
+import { PaymentMethod, PaymentStatus } from "@shared/enum";
 
 
 export interface IPayment {

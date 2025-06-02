@@ -4,7 +4,7 @@ import { formatCurrency, SHIPPING } from '@/lib'
 import { Link, useLocation } from 'wouter'
 
 const CartModal = () => {
-    const [, navigate] = useLocation()
+    const [, setLocation] = useLocation()
 
     const { isCartOpen, toggleCartOpen, cartItems, increaseQuantity, decreaseQuantity, removeFromCart, getCartTotal } = useCart()
     const handleOverlayClick = () => {
@@ -16,7 +16,7 @@ const CartModal = () => {
     }
 
     const handleContinueShopping = () => {
-        navigate('/menu')
+        setLocation('/menu')
         toggleCartOpen()
     }
 

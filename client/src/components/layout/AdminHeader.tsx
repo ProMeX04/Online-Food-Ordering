@@ -5,11 +5,11 @@ import { useLocation } from 'wouter'
 
 export default function AdminHeader() {
     const { logout } = useAuth()
-    const [, navigate] = useLocation()
+    const [, setLocation] = useLocation()
 
     const handleLogout = async () => {
         await logout()
-        navigate('/')
+        setLocation('/')
     }
 
     return (

@@ -16,3 +16,16 @@ export enum OrderStatus {
     DELIVERED = "delivered",
     CANCELLED = "cancelled"
 }
+
+export enum PaymentStatus {
+    PENDING = "pending",
+    SUCCESS = "success",
+    FAILED = "failed"
+}
+
+export enum PaymentMethod {
+    COD = "cod",
+    MOMO = "momo"
+}
+
+

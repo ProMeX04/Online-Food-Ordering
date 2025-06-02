@@ -7,11 +7,15 @@ const redis = new Redis({
 })
 
 redis.on("connect", () => {
-    console.log(`Redis connected: ${redis.options.host}:${redis.options.port}`)
+    console.log(`✅ Redis connected: ${redis.options.host}:${redis.options.port}`)
 })
 
 redis.on("error", (err) => {
-    console.error(`Redis connection error: ${err}`)
+    console.error(err)
 })
+
+export const MESSAGE_STREAM_KEY = "message_stream";
+
+
 
 export default redis

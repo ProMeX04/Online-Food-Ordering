@@ -54,8 +54,6 @@ const addressSchema = z.object({
     cityCode: z.number().optional(),
     districtCode: z.number().optional(),
     wardCode: z.number().optional(),
-    latitude: z.number().optional(),
-    longitude: z.number().optional(),
 })
 
 type AddressFormValues = z.infer<typeof addressSchema>
@@ -81,10 +79,9 @@ export function AddressForm({ initialData, onSubmit, onCancel, isSubmitting = fa
     const [selectedProvinceCode, setSelectedProvinceCode] = useState<number | null>(null)
     const [selectedDistrictCode, setSelectedDistrictCode] = useState<number | null>(null)
 
-    const form = useForm<AddressFormValues>({
-        resolver: zodResolver(addressSchema) as any,
+    const form = useForm({
+        resolver: zodResolver(addressSchema),
         defaultValues: {
-            // Sẽ được reset bởi useEffect
             fullName: '',
             phone: '',
             city: '',
@@ -96,12 +93,9 @@ export function AddressForm({ initialData, onSubmit, onCancel, isSubmitting = fa
             cityCode: undefined,
             districtCode: undefined,
             wardCode: undefined,
-            latitude: undefined,
-            longitude: undefined,
         },
     })
 
-    // Effect chính để xử lý initialData và reset form
     useEffect(() => {
         if (initialData) {
             form.reset({
@@ -113,8 +107,6 @@ export function AddressForm({ initialData, onSubmit, onCancel, isSubmitting = fa
                 street: initialData.street || '',
                 note: initialData.note || '',
                 isDefault: initialData.isDefault || false,
-                latitude: initialData.latitude,
-                longitude: initialData.longitude,
                 cityCode: undefined,
                 districtCode: undefined,
                 wardCode: undefined,
@@ -130,7 +122,6 @@ export function AddressForm({ initialData, onSubmit, onCancel, isSubmitting = fa
                     setDistricts([])
                     setWards([])
                 }
-            } else if (provinces.length === 0 && initialData.city) {
             } else {
                 setSelectedProvinceCode(null)
                 setSelectedDistrictCode(null)
@@ -138,7 +129,6 @@ export function AddressForm({ initialData, onSubmit, onCancel, isSubmitting = fa
                 setWards([])
             }
         } else {
-            // Tạo mới (initialData is null/undefined)
             form.reset({
                 fullName: '',
                 phone: '',
@@ -151,17 +141,14 @@ export function AddressForm({ initialData, onSubmit, onCancel, isSubmitting = fa
                 cityCode: undefined,
                 districtCode: undefined,
                 wardCode: undefined,
-                latitude: undefined,
-                longitude: undefined,
             })
             setSelectedProvinceCode(null)
             setSelectedDistrictCode(null)
             setDistricts([])
             setWards([])
         }
-    }, [initialData, provinces, form]) // Sử dụng form thay vì form.reset
+    }, [initialData, provinces, form]) 
 
-    // Fetch provinces on mount
     useEffect(() => {
         const fetchProvinces = async () => {
             setIsLoadingProvinces(true)
@@ -170,7 +157,6 @@ export function AddressForm({ initialData, onSubmit, onCancel, isSubmitting = fa
                 if (!response.ok) throw new Error('Failed to fetch provinces')
                 const data: Province[] = await response.json()
                 setProvinces(data)
-                // Việc xử lý initialData.city và setSelectedProvinceCode đã được chuyển vào useEffect chính ở trên
             } catch (error) {
                 console.error('Error fetching provinces:', error)
             } finally {
@@ -178,14 +164,13 @@ export function AddressForm({ initialData, onSubmit, onCancel, isSubmitting = fa
             }
         }
         fetchProvinces()
-    }, []) // Chỉ chạy 1 lần khi mount
+    }, []) 
 
-    // Fetch districts when selectedProvinceCode changes
     useEffect(() => {
         if (!selectedProvinceCode) {
             setDistricts([])
             setWards([])
-            setSelectedDistrictCode(null) // Quan trọng: reset selectedDistrictCode
+            setSelectedDistrictCode(null) 
             form.setValue('district', '')
             form.setValue('districtCode', undefined)
             form.setValue('ward', '')
@@ -209,7 +194,6 @@ export function AddressForm({ initialData, onSubmit, onCancel, isSubmitting = fa
                 const data: Province = await response.json()
                 setDistricts(data.districts || [])
 
-                // Xử lý pre-fill cho district nếu có initialData và province hiện tại khớp
                 if (initialData?.district && data.districts && data.name === initialData.city) {
                     const matchedDistrict = data.districts.find((d) => d.name === initialData.district)
                     if (matchedDistrict) {
@@ -223,9 +207,8 @@ export function AddressForm({ initialData, onSubmit, onCancel, isSubmitting = fa
             }
         }
         fetchDistricts()
-    }, [selectedProvinceCode, initialData, form.setValue]) // Thêm initialData để logic pre-fill chạy đúng khi initialData thay đổi VÀ selectedProvinceCode đã đúng
+    }, [selectedProvinceCode, initialData, form.setValue]) 
 
-    // Fetch wards when selectedDistrictCode changes
     useEffect(() => {
         if (!selectedDistrictCode) {
             setWards([])
@@ -235,7 +218,7 @@ export function AddressForm({ initialData, onSubmit, onCancel, isSubmitting = fa
         }
         const fetchWards = async () => {
             setIsLoadingWards(true)
-            setWards([]) // Reset wards của quận cũ
+            setWards([]) 
             form.setValue('ward', '')
             form.setValue('wardCode', undefined)
             try {
@@ -260,7 +243,7 @@ export function AddressForm({ initialData, onSubmit, onCancel, isSubmitting = fa
             }
         }
         fetchWards()
-    }, [selectedDistrictCode, initialData, form.setValue]) // Thêm initialData
+    }, [selectedDistrictCode, initialData, form.setValue]) 
 
     const handleProvinceChange = (provinceCodeStr: string) => {
         const provinceCode = parseInt(provinceCodeStr)

@@ -44,7 +44,7 @@ const HeroSection = () => {
                             Đặt món ăn Việt Nam yêu thích của bạn và nhận giao hàng tận nơi trong 30 phút. Thưởng thức hương vị Việt Nam chính thống ngay tại nhà.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                            <Link href="/menu">
+                            <Link href="/menu/normal-mode">
                                 <Button variant="default" size="lg" className="font-medium px-8">
                                     Đặt Ngay
                                 </Button>

@@ -1,7 +1,6 @@
 import { IDish, IDishDocument } from '@/model/dish.model'
 import { esClient } from '@/config/elasticSearch'
 import DishModel from '@/model/dish.model'
-import DishService from './dish.service'
 
 export default class SearchService {
     private static indexReady: boolean = false;
@@ -9,11 +8,11 @@ export default class SearchService {
 
     private static convertDishToDocument(dish: IDishDocument | any): any {
         return {
-            id: dish._id?.toString(),
+            id: dish._id,
             name: dish.name,
             description: dish.description,
             price: dish.price,
-            category: dish.category?.toString(),
+            category: dish.category,
             isAvailable: dish.isAvailable,
             rating: dish.rating,
             soldCount: dish.soldCount,
@@ -31,9 +30,9 @@ export default class SearchService {
     static initElasticsearch = async (): Promise<void> => {
         try {
             SearchService.resetIndexStatus();
-            await DishService.syncAllDishesToElasticsearch();
+            await SearchService.syncDishesToElasticsearch();
         } catch (error: any) {
-            console.error(`❌ Lỗi khi khởi tạo Elasticsearch: ${error.message}`);
+            console.error(error.message);
         }
     }
 
@@ -61,7 +60,6 @@ export default class SearchService {
             SearchService.indexReady = true;
             return true;
         } catch (error: any) {
-            console.error(`❌ Lỗi khi kiểm tra index Elasticsearch: ${error.message}`);
             return false;
         }
     }
@@ -131,7 +129,7 @@ export default class SearchService {
         try {
             await SearchService.ensureIndex();
 
-            const dishes = await DishModel.find({}).lean();
+            const dishes = await DishModel.find().lean();
             if (dishes.length === 0) return true;
 
             const operations = dishes.flatMap(dish => [
@@ -142,7 +140,7 @@ export default class SearchService {
             const response = await esClient.bulk({ operations, refresh: true });
             return !response.errors;
         } catch (error: any) {
-            console.error(`❌ Lỗi khi đồng bộ dữ liệu: ${error.message}`);
+            console.error(error.message);
             return false;
         }
     }
@@ -150,6 +148,7 @@ export default class SearchService {
     static indexDish = async (dish: IDishDocument): Promise<boolean> => {
         try {
             await SearchService.ensureIndex();
+
 
             await esClient.index({
                 index: SearchService.INDEX_NAME,
@@ -160,7 +159,7 @@ export default class SearchService {
 
             return true;
         } catch (error: any) {
-            console.error(`❌ Lỗi khi thêm/cập nhật món ăn: ${error.message}`);
+            console.error(error.message);
             return false;
         }
     }
@@ -183,7 +182,7 @@ export default class SearchService {
                 throw error;
             }
         } catch (error: any) {
-            console.error(`❌ Lỗi khi xóa món ăn: ${error.message}`);
+            console.error(error.message );
             return false;
         }
     }
@@ -202,12 +201,11 @@ export default class SearchService {
             isSpecial?: boolean;
         } = {},
         page: number = 1,
-        limit: number = 20
+        limit: number = Number.MAX_SAFE_INTEGER
     ): Promise<{ dishes: IDish[], total: number }> => {
         try {
             await SearchService.ensureIndex();
 
-            // Xây dựng query
             const searchQuery = {
                 bool: {
                     must: [{
@@ -256,7 +254,6 @@ export default class SearchService {
                 total: total.value
             };
         } catch (error: any) {
-            console.error(`❌ Lỗi khi tìm kiếm món ăn: ${error.message}`);
             return { dishes: [], total: 0 };
         }
     }

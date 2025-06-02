@@ -24,11 +24,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
 
 		const user = await User.findById(decoded.id).select("-password")
 
-		if (!user) {
-			return sendError(res, "Unauthorized", 401)
-		}
-
-		if (!user.isActive) {
+		if (!user || !user.isActive) {
 			return sendError(res, "Unauthorized", 401)
 		}
 
@@ -38,6 +34,28 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
 		return sendError(res, "Unauthorized", 401)
 	}
 }
+
+export const authenticateOptional = async (req: Request, res: Response, next: NextFunction) => {
+	try {
+		const token = req.headers.authorization?.split(" ")[1]
+		if (!token) {
+			next()
+			return;
+		}
+		const jwtSecret = JWT_SECRET || "default_secret"
+		const decoded = jwt.verify(token, jwtSecret) as TokenPayload
+		const user = await User.findById(decoded.id).select("-password")
+		if (!user || !user.isActive) {
+			next()
+			return;
+		}
+
+		req.user = user
+		next()
+	} catch (error) {
+		next()
+	}
+}	
 
 export const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
 	if (req.user?.role !== "admin") {

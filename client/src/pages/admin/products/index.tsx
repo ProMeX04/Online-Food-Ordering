@@ -27,7 +27,7 @@ import AdminLayout from '../AdminLayout'
 
 export default function ProductsPage() {
     const { toast } = useToast()
-    const [, navigate] = useLocation()
+    const [, setLocation] = useLocation()
     const [dishes, setDishes] = useState<Dish[]>([])
     const [categories, setCategories] = useState<Category[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -209,7 +209,7 @@ export default function ProductsPage() {
                 <CardHeader className="pb-3">
                     <div className="flex justify-between items-center">
                         <CardTitle>Quản lý món ăn</CardTitle>
-                        <Button onClick={() => navigate('/admin/products/new')}>
+                        <Button onClick={() => setLocation('/admin/products/new')}>
                             <Plus className="w-4 h-4 mr-2" /> Thêm món ăn
                         </Button>
                     </div>
@@ -328,7 +328,7 @@ export default function ProductsPage() {
                                                         alt={dish.name}
                                                         className="w-full h-full object-cover"
                                                         onError={(e) => {
-                                                            ;(e.target as HTMLImageElement).src = 'https://via.placeholder.com/40x40?text=NA'
+                                                            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/40x40?text=NA'
                                                         }}
                                                     />
                                                 </div>
@@ -368,7 +368,7 @@ export default function ProductsPage() {
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex justify-center space-x-2">
-                                                    <Button variant="outline" size="icon" onClick={() => navigate(`/admin/products/edit/${dish._id}`)}>
+                                                    <Button variant="outline" size="icon" onClick={() => setLocation(`/admin/products/edit/${dish._id}`)}>
                                                         <Pencil className="h-4 w-4" />
                                                     </Button>
                                                     <AlertDialog>

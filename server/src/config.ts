@@ -26,3 +26,7 @@ export const VERIFICATION_TOKEN_EXPIRE = Number(process.env.VERIFICATION_TOKEN_E
 export const RESET_PASSWORD_EXPIRE = Number(process.env.RESET_PASSWORD_EXPIRE) || 10 * 60
 export const BLACKLIST_TOKEN_EXPIRE = Number(process.env.BLACKLIST_TOKEN_EXPIRE) || 7 * 24 * 60 * 60
 
+export const GEMINI_API_KEY = process.env.GEMINI_API_KEY || ""
+export const MODEL = process.env.MODEL || "gemini-2.0-flash"
+
+export const PORT = Number(process.env.PORT) || 3000

@@ -19,7 +19,7 @@ export default function LoginPage() {
     const [showRegisterSuccess, setShowRegisterSuccess] = useState(false)
     const [isLoggingIn, setIsLoggingIn] = useState(false)
     const { user, login } = useAuth()
-    const [, navigate] = useLocation()
+    const [, setLocation] = useLocation()
 
     useEffect(() => {
         const url = new URL(window.location.href)
@@ -31,18 +31,14 @@ export default function LoginPage() {
 
     useEffect(() => {
         if (user) {
-            navigate('/')
+            setLocation('/')
         }
-    }, [user, navigate])
+    }, [user, setLocation])
 
     const handleLogin = async (data: LoginFormValues) => {
         setIsLoggingIn(true)
-        try {
-            await login(data)
-        } catch (error) {
-        } finally {
-            setIsLoggingIn(false)
-        }
+        await login(data)
+        setIsLoggingIn(false)
     }
 
     if (user) {

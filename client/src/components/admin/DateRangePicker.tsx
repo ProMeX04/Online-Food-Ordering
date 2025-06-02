@@ -5,15 +5,14 @@ import { DateRange } from 'react-day-picker'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 // import { Calendar } from '@/components/ui/calendar'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Popover, PopoverTrigger } from '@/components/ui/popover'
 
 interface CalendarDateRangePickerProps {
     date: DateRange
-    setDate: (date: DateRange) => void
     className?: string
 }
 
-export function CalendarDateRangePicker({ date, setDate, className }: CalendarDateRangePickerProps) {
+export function CalendarDateRangePicker({ date, className }: CalendarDateRangePickerProps) {
     return (
         <div className={cn('grid gap-2', className)}>
             <Popover>

@@ -5,19 +5,34 @@ import { Overview } from '@/components/admin/Overview'
 import { RecentOrders } from '@/components/admin/RecentOrders'
 import { TopDishes } from '@/components/admin/TopDishes'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { CalendarDateRangePicker } from '@/components/admin/DateRangePicker'
+// import { CalendarDateRangePicker } from '@/components/admin/DateRangePicker'
 import { Button } from '@/components/ui/button'
 import { toast } from '@/hooks/use-toast'
 import { Loader2 } from 'lucide-react'
 import AdminLayout from './AdminLayout'
+import { Dish, OrderItem, OrderStatus, User } from '@/types/schema'
+import { IAddress } from '@/types/address'
+
+export interface RecentOrder {
+    _id: string
+    userId: User
+    createdAt: string
+    status: OrderStatus
+    totalAmount: number
+    orderItems: OrderItem[]
+    shippingAddress: IAddress
+    note: string
+    paymentID: string
+}
+
 
 interface DashboardStats {
     totalOrders: number
     totalRevenue: number
     totalUsers: number
     totalProducts: number
-    recentOrders: any[]
-    topDishes: any[]
+    recentOrders: RecentOrder[]
+    topDishes: Dish[]
     orderStats: {
         date: string
         total: number
@@ -27,7 +42,7 @@ interface DashboardStats {
 export default function AdminDashboard() {
     const [isLoading, setIsLoading] = useState(true)
     const [stats, setStats] = useState<DashboardStats | null>(null)
-    const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
+    const [dateRange] = useState<{ from: Date; to: Date }>({
         from: new Date(new Date().getFullYear(), new Date().getMonth(), 1), // Đầu tháng hiện tại
         to: new Date(), // Hiện tại
     })
@@ -73,7 +88,6 @@ export default function AdminDashboard() {
                 <div className="flex items-center justify-between space-y-2">
                     <h2 className="text-3xl font-bold tracking-tight">Tổng quan</h2>
                     <div className="flex items-center space-x-2">
-                        <CalendarDateRangePicker date={dateRange} setDate={setDateRange} />
                         <Button onClick={fetchDashboardStats}>Làm mới</Button>
                     </div>
                 </div>
@@ -149,7 +163,13 @@ export default function AdminDashboard() {
                                     <CardDescription>Các món ăn được đặt nhiều nhất</CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <TopDishes data={stats.topDishes} />
+                                    <TopDishes data={stats.topDishes.map(dish => ({
+                                        _id: dish._id,
+                                        name: dish.name,
+                                        image: dish.imageUrl,
+                                        totalOrders: dish.soldCount,
+                                        totalRevenue: dish.price * dish.soldCount,
+                                    }))} />
                                 </CardContent>
                             </Card>
                         </div>

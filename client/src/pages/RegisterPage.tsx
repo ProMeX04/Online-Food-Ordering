@@ -33,17 +33,17 @@ interface VerifyEmailFormProps {
 export default function RegisterPage() {
     const [showVerification, setShowVerification] = useState(false)
     const [registeredEmail, setRegisteredEmail] = useState('')
-    const { user, register,  } = useAuth()
-    const [, navigate] = useLocation()
+    const { user, register } = useAuth()
+    const [, setLocation] = useLocation()
     const [isRegistering, setIsRegistering] = useState(false)
     const [registerSuccess, setRegisterSuccess] = useState(false)
-    const [verifySuccess, ] = useState(false)
+    const [verifySuccess] = useState(false)
 
     useEffect(() => {
         if (user) {
-            navigate('/')
+            setLocation('/')
         }
-    }, [user, navigate])
+    }, [user, setLocation])
 
     useEffect(() => {
         if (registerSuccess) {
@@ -53,9 +53,9 @@ export default function RegisterPage() {
 
     useEffect(() => {
         if (verifySuccess) {
-            navigate('/login?verified=true')
+            setLocation('/login?verified=true')
         }
-    }, [verifySuccess, navigate])
+    }, [verifySuccess, setLocation])
 
     if (user) {
         return null
@@ -74,29 +74,20 @@ export default function RegisterPage() {
                     </div>
 
                     {showVerification ? (
-                        <VerifyEmailForm
-                            email={registeredEmail}
-                            onVerificationSuccess={() => {
-                            }}
-                        />
+                        <VerifyEmailForm email={registeredEmail} onVerificationSuccess={() => {}} />
                     ) : (
                         <RegisterForm
                             isPending={isRegistering}
                             isSuccess={registerSuccess}
                             onSubmit={async (data) => {
-                                try {
-                                    setIsRegistering(true)
-                                    const { confirmPassword, ...userData } = data
-                                    const response = await register(userData)
+                                setIsRegistering(true)
+                                const { ...userData } = data
+                                const response = await register(userData)
                                     if (response.success) {
                                         setRegisterSuccess(true)
                                         setRegisteredEmail(userData.email)
-                                    }
-                                } catch (error) {
-                                    console.error(error)
-                                } finally {
-                                    setIsRegistering(false)
                                 }
+                                setIsRegistering(false)
                             }}
                         />
                     )}

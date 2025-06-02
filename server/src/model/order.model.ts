@@ -1,14 +1,9 @@
 import { Schema, model, Types } from "mongoose";
 import { IOrderItem, orderItemSchema } from "./orderItem.model";
 import { AddressSchema, IAddress } from "./address.model";
+import { OrderStatus } from "@shared/enum";
 
-export enum OrderStatus {
-    PENDING = "pending",
-    PROCESSING = "processing",
-    SHIPPED = "shipped",
-    DELIVERED = "delivered",
-    CANCELLED = "cancelled"
-}   
+
 
 export interface IOrder {
     userId: Types.ObjectId

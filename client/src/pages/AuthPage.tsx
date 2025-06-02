@@ -39,15 +39,15 @@ export default function AuthPage() {
     const [showVerification, setShowVerification] = useState(false)
     const [registeredEmail, setRegisteredEmail] = useState('')
     const { user, login, register } = useAuth()
-    const [, navigate] = useLocation()
+    const [, setLocation] = useLocation()
     const [isPending, setIsPending] = useState(false)
     const [isSuccess, setIsSuccess] = useState(false)
 
     useEffect(() => {
         if (user) {
-            navigate('/')
+            setLocation('/')
         }
-    }, [user, navigate])
+    }, [user, setLocation])
 
     useEffect(() => {
         if (isSuccess) {
@@ -59,7 +59,6 @@ export default function AuthPage() {
         setIsPending(true)
         try {
             await login(data)
-        } catch (error) {
         } finally {
             setIsPending(false)
         }
@@ -68,11 +67,10 @@ export default function AuthPage() {
     const handleRegister = async (data: RegisterFormValues) => {
         setIsPending(true)
         try {
-            const { confirmPassword, ...userData } = data
+            const { ...userData } = data
             await register(userData)
             setIsSuccess(true)
             setRegisteredEmail(userData.email)
-        } catch (error) {
         } finally {
             setIsPending(false)
         }

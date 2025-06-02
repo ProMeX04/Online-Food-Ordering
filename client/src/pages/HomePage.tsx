@@ -1,10 +1,10 @@
 import HeroSection from '@/components/home/HeroSection'
 import SpecialOffers from '@/components/home/SpecialOffers'
-import Categories from '@/components/home/Categories'
 import PopularDishes from '@/components/home/PopularDishes'
 import AboutSection from '@/components/home/AboutSection'
 import ContactSection from '@/components/contact/ContactSection'
 import { useEffect } from 'react'
+import Categories from '@/components/home/Categories'
 
 const Home = () => {
     useEffect(() => {

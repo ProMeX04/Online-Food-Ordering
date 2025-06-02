@@ -6,7 +6,6 @@ import { useCart } from '@/context/CartContext'
 import { formatCurrency } from '@/lib'
 import { Dish } from '@/types/schema'
 import { FoodCard } from '@/components/ui/FoodCard'
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 import { get } from '@/lib'
 const DishDetail = () => {
     const { _id } = useParams()
@@ -114,32 +113,6 @@ const DishDetail = () => {
     return (
         <div className="bg-light">
             <div className="container mx-auto px-4 py-12">
-                <div className="mb-6">
-                    <Breadcrumb>
-                        <BreadcrumbList>
-                            <BreadcrumbItem>
-                                <BreadcrumbLink asChild>
-                                    <Link href="/">
-                                        <span className="hover:text-primary cursor-pointer">Trang chủ</span>
-                                    </Link>
-                                </BreadcrumbLink>
-                            </BreadcrumbItem>
-                            <BreadcrumbSeparator />
-                            <BreadcrumbItem>
-                                <BreadcrumbLink asChild>
-                                    <Link href="/menu">
-                                        <span className="hover:text-primary cursor-pointer">Thực đơn</span>
-                                    </Link>
-                                </BreadcrumbLink>
-                            </BreadcrumbItem>
-                            <BreadcrumbSeparator />
-                            <BreadcrumbItem>
-                                <span className="text-primary">{dish.name}</span>
-                            </BreadcrumbItem>
-                        </BreadcrumbList>
-                    </Breadcrumb>
-                </div>
-
                 <div className="flex flex-col lg:flex-row gap-10 mb-16">
                     <div className="lg:w-1/2">
                         <Card className="overflow-hidden">

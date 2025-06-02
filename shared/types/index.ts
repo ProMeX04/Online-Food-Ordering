@@ -9,3 +9,15 @@ export interface IPaginatedResponse<T> extends IApiResponse<T[]> {
     page: number;
     limit: number;
 }
+
+
+export type FunctionResponse = {
+    name: string;
+    response: any;
+    responseType: string;
+}
+
+export type AIResponse = {
+    text: string;
+    functionResponse: FunctionResponse[];
+}

@@ -8,7 +8,8 @@ import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import CartModal from '@/components/layout/CartModal'
 import Home from '@/pages/HomePage'
-import ShoppingPage from '@/pages/ShoppingPage'
+import AiShoppingPage from '@/pages/AiShoppingPage'
+import NormalShoppingPage from '@/pages/NormalShoppingPage'
 import DishDetail from '@/pages/DishDetail'
 import About from '@/pages/About'
 import Contact from '@/pages/Contact'
@@ -23,7 +24,7 @@ import AdminDashboard from '@/pages/admin'
 import ProductsPage from '@/pages/admin/products'
 import NewProductPage from '@/pages/admin/products/new'
 import EditProductPage from '@/pages/admin/products/edit/[id]'
-import CategoriesPage from '@/pages/admin/categories/categories'
+import CategoriesPage from '@/pages/admin/categories'
 import OrdersPage from '@/pages/admin/orders'
 import UsersPage from './pages/admin/users'
 import SettingsPage from './pages/admin/settings'
@@ -47,8 +48,9 @@ function App() {
                             <main className="flex-grow">
                                 <Switch>
                                     <Route path="/" component={Home} />
-                                    <Route path="/menu" component={ShoppingPage} />
-                                    <Route path="/menu/:slug" component={ShoppingPage} />
+                                    <Route path="/menu/ai-mode" component={AiShoppingPage} />
+                                    <Route path="/menu/normal-mode" component={NormalShoppingPage} />
+                                    <Route path="/menu/normal-mode/:slug" component={NormalShoppingPage} />
                                     <Route path="/dish/:_id" component={DishDetail} />
                                     <Route path="/about" component={About} />
                                     <Route path="/contact" component={Contact} />

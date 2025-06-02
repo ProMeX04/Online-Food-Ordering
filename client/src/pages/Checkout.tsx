@@ -37,6 +37,15 @@ const Checkout = () => {
         notes: '',
     })
 
+    if (!authUser) {
+        toast({
+            title: 'Vui lòng đăng nhập để tiếp tục',
+            description: 'Vui lòng đăng nhập để tiếp tục',
+            variant: 'destructive',
+        })
+        setLocation('/login')
+    }
+
     useEffect(() => {
         if (authUser && profile) {
             setFormData((prev) => ({
@@ -197,10 +206,10 @@ const Checkout = () => {
                 description: 'Địa chỉ mới đã được thêm và chọn.',
             })
             setShowAddAddressModal(false)
-        } catch (error: any) {
+        } catch (error: unknown) {
             toast({
                 title: 'Thêm địa chỉ thất bại',
-                description: error.message || 'Có lỗi xảy ra.',
+                description: (error as Error).message || 'Có lỗi xảy ra.',
                 variant: 'destructive',
             })
         } finally {
