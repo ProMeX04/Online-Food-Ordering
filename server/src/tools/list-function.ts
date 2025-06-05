@@ -21,7 +21,7 @@ export const searchDishes = async ({ limit = undefined, sortBy = undefined, isPo
 
         return {
             response: dishes,
-            nextCall: false,
+            nextCall: dishes.length === 0 ? "Cần thử dùng tìm kiếm theo danh mục" : "Có thể dừng lại",
             responseType: 'dishes',
         }
     } catch (error) {

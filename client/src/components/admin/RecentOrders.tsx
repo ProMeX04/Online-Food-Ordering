@@ -46,7 +46,7 @@ export function RecentOrders({ data }: RecentOrdersProps) {
                     {data.map((order) => (
                         <tr key={order._id} className="border-b transition-colors hover:bg-muted/50">
                             <td className="p-4 align-middle">{order._id}</td>
-                            <td className="p-4 align-middle">{order.userId.username}</td>
+                            <td className="p-4 align-middle">{order.userId?.username}</td>
                             <td className="p-4 align-middle">
                                 {new Date(order?.createdAt || new Date()).toLocaleDateString('vi-VN', {
                                     year: 'numeric',

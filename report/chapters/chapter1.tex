@@ -1,6 +1,49 @@
 \section{Giới thiệu dự án}
 Việt Food là một ứng dụng web fullstack với kiến trúc client-server nhằm cung cấp nền tảng đặt món ăn Việt Nam trực tuyến. Ứng dụng được phát triển với mục đích tạo ra trải nghiệm người dùng hiện đại, thân thiện, đồng thời đảm bảo hiệu suất cao và khả năng mở rộng. Với giao diện người dùng trực quan và hệ thống backend mạnh mẽ, Việt Food nhằm mục đích kết nối người dùng với các món ăn truyền thống và hiện đại của ẩm thực Việt Nam.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{images/home-page.png}
+    \caption{Giao diện trang chủ ứng dụng Việt Food}
+    \label{fig:home-page}
+\end{figure}
+
+Hình \ref{fig:home-page} thể hiện giao diện chính của ứng dụng, nơi người dùng có thể xem các món ăn nổi bật, tìm kiếm món ăn và dễ dàng đặt hàng.
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/shopping-page.png}
+        \caption{Trang đặt món ăn}
+        \label{fig:shopping}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/chat-page.png}
+        \caption{Tính năng chat hỗ trợ}
+        \label{fig:chat}
+    \end{minipage}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/profile-page.png}
+        \caption{Trang thông tin cá nhân}
+        \label{fig:profile}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/admin-page.png}
+        {\footnotesize \caption{Trang quản trị viên}}
+        \label{fig:admin}
+    \end{minipage}
+\end{figure}
+
 \section{Công nghệ sử dụng}
 Dự án được xây dựng bằng các công nghệ hiện đại:
 
@@ -22,35 +65,6 @@ Dự án được xây dựng bằng các công nghệ hiện đại:
     \item \textbf{React}: Thư viện JavaScript để xây dựng giao diện người dùng tương tác.
     \item \textbf{TypeScript}: Đảm bảo type safety và khả năng bảo trì cho mã nguồn frontend.
     \item \textbf{Tailwind CSS}: Framework CSS tiện ích giúp phát triển UI nhanh chóng và đồng nhất.
-    \item \textbf{React Query}: Thư viện quản lý trạng thái và fetch data từ server.
-    \item \textbf{Radix UI}: Bộ components primitives có thể tùy chỉnh cao.
-    \item \textbf{Chart.js \& Recharts}: Thư viện tạo biểu đồ cho phép hiển thị dữ liệu trực quan.
     \item \textbf{React Hook Form}: Quản lý biểu mẫu với hiệu suất cao.
     \item \textbf{Zod}: Thư viện xác thực dữ liệu với TypeScript.
-    \item \textbf{Framer Motion}: Thư viện animation mạnh mẽ và linh hoạt.
-    \item \textbf{Mapbox GL}: Tích hợp bản đồ tương tác để hiển thị địa điểm.
-\end{itemize}
-
-\section{Phạm vi báo cáo}
-Báo cáo này tập trung vào phân tích toàn diện dự án Việt Food, bao gồm cả frontend và backend. Các nội dung chính được phân tích:
-
-\begin{itemize}
-    \item \textbf{Kiến trúc tổng thể}: Cấu trúc dự án, mô hình phân lớp và luồng dữ liệu.
-    \item \textbf{Frontend}: Cấu trúc mã nguồn, các components chính, quản lý trạng thái và routing.
-    \item \textbf{Backend}: API endpoints, xử lý dữ liệu, tương tác với cơ sở dữ liệu.
-    \item \textbf{Các kỹ thuật tối ưu}: Caching với Redis, xử lý tin nhắn với Redis Stream, nén dữ liệu, và tối ưu hóa hình ảnh.
-    \item \textbf{Trải nghiệm người dùng}: UI/UX design, tính năng tương tác và phản hồi.
-    \item \textbf{Khả năng mở rộng}: Cách dự án được thiết kế để xử lý việc tăng trưởng quy mô.
-\end{itemize}
-
-Việc phân tích toàn diện giúp hiểu rõ cách các thành phần khác nhau trong dự án tương tác và bổ trợ cho nhau, đồng thời đánh giá hiệu quả tổng thể của hệ thống.
-
-\section{Cấu trúc báo cáo}
-Báo cáo gồm 5 chương:
-\begin{itemize}
-    \item \textbf{Chương 1}: Giới thiệu tổng quan về dự án Việt Food và các công nghệ sử dụng.
-    \item \textbf{Chương 2}: Phân tích kiến trúc và thiết kế tổng thể của hệ thống.
-    \item \textbf{Chương 3}: Phân tích chi tiết các thành phần frontend và backend.
-    \item \textbf{Chương 4}: Đánh giá và nhận xét về hiệu quả của các kỹ thuật và giải pháp áp dụng.
-    \item \textbf{Chương 5}: Kết luận và đề xuất hướng phát triển trong tương lai.
 \end{itemize}

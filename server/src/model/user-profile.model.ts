@@ -12,6 +12,7 @@ export interface IUserProfile {
     dob: Date
     gender: Gender
     bio?: string
+    info?: string
 }
 
 export interface IUserProfileDocument extends IUserProfile, mongoose.Document { }
@@ -26,6 +27,7 @@ const UserProfileSchema = new mongoose.Schema({
     dob: { type: Date, default: null },
     gender: { type: String, enum: Object.values(Gender), default: Gender.MALE },
     bio: { type: String, default: "" },
+    info: { type: String, default: "" },
 }, { timestamps: true });
 
 export default mongoose.model<IUserProfileDocument>("UserProfile", UserProfileSchema);

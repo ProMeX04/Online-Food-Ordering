@@ -1,6 +1,6 @@
 \section{Phân tích chi tiết các thành phần của dự án}
 
-Phần này phân tích chi tiết các thành phần frontend và backend của dự án Việt Food. Chúng tôi sẽ đi sâu vào các tính năng nổi bật, kỹ thuật triển khai, và những giải pháp được áp dụng để đảm bảo hiệu suất và trải nghiệm người dùng tốt.
+Phần này phân tích chi tiết các thành phần frontend và backend của dự án Việt Food. Em sẽ đi sâu vào các tính năng nổi bật, kỹ thuật triển khai, và những giải pháp được áp dụng để đảm bảo hiệu suất và trải nghiệm người dùng tốt.
 
 \section{Frontend - Giao diện người dùng}
 
@@ -9,26 +9,10 @@ Phần này phân tích chi tiết các thành phần frontend và backend của
 Frontend của Việt Food được xây dựng bằng React và TypeScript, áp dụng một cấu trúc có tính mô-đun cao và dễ bảo trì. Hệ thống component được tổ chức theo các lớp:
 
 \begin{enumerate}
-    \item \textbf{Atomic Design Pattern}: Các component được tổ chức theo mô hình Atoms, Molecules, Organisms, Templates và Pages.
     \item \textbf{Chia nhỏ component}: Các thành phần UI được tách thành các component nhỏ để tăng khả năng tái sử dụng.
     \item \textbf{Cô lập logic}: Logic được tách biệt với giao diện thông qua các custom hooks.
 \end{enumerate}
 
-Một ví dụ về cấu trúc component trong Việt Food:
-
-\begin{verbatim}
-// Atomic design: Button (Atom)
-src/components/ui/button.tsx
-
-// DishCard (Molecule)
-src/components/dishes/dish-card.tsx
-
-// DishList (Organism)
-src/components/dishes/dish-list.tsx
-
-// HomePage (Page)
-src/pages/home.tsx
-\end{verbatim}
 
 \subsection{Styling và Thiết kế}
 
@@ -41,36 +25,6 @@ Việt Food sử dụng Tailwind CSS kết hợp với các component từ Radix
     \item \textbf{Responsive Design}: Ứng dụng được thiết kế đáp ứng trên các kích thước màn hình khác nhau.
 \end{itemize}
 
-Một ví dụ về cách kết hợp Radix UI và Tailwind CSS:
-
-\begin{verbatim}
-// Button component sử dụng Radix UI Slot với Tailwind CSS
-import { Slot } from "@radix-ui/react-slot"
-import { cva, type VariantProps } from "class-variance-authority"
-
-const buttonVariants = cva(
-  "inline-flex items-center justify-center rounded-md text-sm font-medium",
-  {
-    variants: {
-      variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-        // ... các variants khác
-      },
-      size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-md px-8",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
-  }
-)
-\end{verbatim}
 
 \subsection{Quản lý dữ liệu và State Management}
 
@@ -80,70 +34,18 @@ Việt Food sử dụng một hỗn hợp các công cụ để quản lý dữ 
     \item \textbf{React Context API}: Quản lý trạng thái toàn cục của ứng dụng như xác thực người dùng (auth), giỏ hàng (cart).
     \item \textbf{Custom Hooks}: Tạo ra các hooks chuyên biệt như useAuth, useProfile để truy cập và cập nhật trạng thái.
     \item \textbf{Zod}: Validation dữ liệu chặt chẽ với TypeScript.
-    \item \textbf{React Hook Form}: Quản lý form với hiệu suất cao.
     \item \textbf{Local Storage}: Lưu trữ access token và refresh token trên client.
 \end{itemize}
 
-Ví dụ về việc triển khai Context API và custom hooks để quản lý giỏ hàng:
+Hệ thống quản lý giỏ hàng sử dụng Context API với các tính năng chính:
+\begin{itemize}
+    \item Quản lý danh sách sản phẩm trong giỏ hàng
+    \item Theo dõi trạng thái mở/đóng giỏ hàng
+    \item Các thao tác thêm, xóa, cập nhật số lượng sản phẩm
+    \item Tính toán tự động tổng tiền và số lượng sản phẩm
+\end{itemize}
 
-\begin{verbatim}
-// CartContext.tsx
-import { createContext, useContext, useState, ReactNode } from "react";
-
-interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  imageUrl: string;
-  quantity: number;
-}
-
-interface CartContextType {
-  cartItems: CartItem[];
-  isCartOpen: boolean;
-  addToCart: (item: CartItem) => void;
-  removeFromCart: (id: string) => void;
-  // ... các phương thức khác
-}
-
-const CartContext = createContext<CartContextType | undefined>(undefined);
-
-export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  
-  // Triển khai các phương thức
-  
-  return (
-    <CartContext.Provider value={{ cartItems, isCartOpen, ... }}>
-      {children}
-    </CartContext.Provider>
-  );
-};
-
-// Custom hook để sử dụng context
-export const useCart = () => {
-  const context = useContext(CartContext);
-  if (context === undefined) {
-    throw new Error("useCart must be used within a CartProvider");
-  }
-  return context;
-};
-\end{verbatim}
-
-\begin{verbatim}
-function DishListPage() {
-  const [filters, setFilters] = useState({
-    category: '',
-    search: '',
-    page: 1
-  })
-  
-  const { data, isLoading, error } = useDishes(filters)
-  
-  // ...
-}
-\end{verbatim}
+Custom hook \texttt{useCart} được sử dụng để truy cập ngữ cảnh giỏ hàng từ bất kỳ component nào trong ứng dụng một cách dễ dàng.
 
 \subsection{Routing và Navigation}
 
@@ -155,99 +57,19 @@ Việt Food sử dụng thư viện wouter cho routing nhẹ nhàng và hiệu q
     \item \textbf{URL Params và Query Strings}: Xử lý các tham số đường dẫn và query string cho tìm kiếm và lọc.
 \end{itemize}
 
-Cấu trúc routing trong Việt Food:
-
-\begin{verbatim}
-import { Route, Switch } from 'wouter'
-import { lazy, Suspense } from 'react'
-
-// Lazy loaded components
-const Home = lazy(() => import('./pages/home'))
-const DishList = lazy(() => import('./pages/dish-list'))
-const DishDetail = lazy(() => import('./pages/dish-detail'))
-const Cart = lazy(() => import('./pages/cart'))
-
-function App() {
-  return (
-    <Suspense fallback={<LoadingSpinner />}>
-      <Switch>
-        <Route path="/" component={Home} />
-        <Route path="/dishes" component={DishList} />
-        <Route path="/dishes/:id" component={DishDetail} />
-        <Route path="/cart">
-          {/* Protected route */}
-          {isAuthenticated ? <Cart /> : <Redirect to="/login" />}
-        </Route>
-        {/* ... more routes */}
-      </Switch>
-    </Suspense>
-  )
-}
-\end{verbatim}
-
-\subsection{Optimization tại Frontend}
-
-Frontend của Việt Food áp dụng nhiều kỹ thuật tối ưu hoá để đảm bảo hiệu suất cao:
-
+Hệ thống routing được cấu hình với các tính năng chính:
 \begin{itemize}
-    \item \textbf{Code Splitting}: Chia nhỏ bundle JS thông qua lazy loading.
-    \item \textbf{Memoization}: Sử dụng React.memo, useMemo, và useCallback để giảm re-renders không cần thiết.
-    \item \textbf{Virtualization}: Sử dụng windowing cho danh sách dài.
-    \item \textbf{Image Optimization}: Sử dụng các kỹ thuật lazy loading, responsive images, và next-gen formats (WebP).
-    \item \textbf{Bundle Optimization}: Sử dụng Vite để bundling nhanh và hiệu quả.
+    \item Định nghĩa các route chính: Trang chủ, Danh sách món ăn, Chi tiết món, Giỏ hàng
+    \item Sử dụng lazy loading để tải các component khi cần thiết
+    \item Bảo vệ các route yêu cầu xác thực
+    \item Xử lý các tham số động trong URL
 \end{itemize}
-
-Ví dụ về tối ưu hoá component với memoization:
-
-\begin{verbatim}
-import { memo, useMemo, useCallback } from 'react'
-
-// Memoized component để tránh re-renders không cần thiết
-const DishCard = memo(function DishCard({ dish, onAddToCart }) {
-  // Xử lý component rendering
-  return (
-    <div className="dish-card">
-      <img 
-        src={dish.imageUrl} 
-        alt={dish.name}
-        loading="lazy" // Lazy load images
-      />
-      <h3>{dish.name}</h3>
-      <p>{dish.price.toLocaleString('vi-VN')} đ</p>
-      <button onClick={() => onAddToCart(dish)}>Thêm vào giỏ</button>
-    </div>
-  )
-})
-
-function DishList({ dishes }) {
-  // Memoize expensive calculations
-  const sortedDishes = useMemo(() => {
-    return [...dishes].sort((a, b) => a.price - b.price)
-  }, [dishes])
-  
-  // Memoize callback functions
-  const handleAddToCart = useCallback((dish) => {
-    // Logic để thêm vào giỏ hàng
-  }, [])
-  
-  return (
-    <div className="dish-grid">
-      {sortedDishes.map(dish => (
-        <DishCard 
-          key={dish.id} 
-          dish={dish} 
-          onAddToCart={handleAddToCart}
-        />
-      ))}
-    </div>
-  )
-}
-\end{verbatim}
 
 \section{Backend - Kỹ thuật tối ưu hóa}
 
 \subsection{Redis Caching}
 
+Hệ thống sử dụng Redis làm hệ thống cache để tối ưu hóa thời gian truy vấn dữ liệu. Redis được cấu hình và khởi tạo trong file \texttt{config/redis.ts}. Cache dữ liệu món ăn là loại dữ liệu được truy cập thường xuyên nhưng ít thay đổi, nên việc cache là rất hiệu quả. Hệ thống sử dụng kỹ thuật "prime cache" khi khởi động server - tức là nạp trước dữ liệu phổ biến vào cache. Khi dữ liệu thay đổi, cache cần được cập nhật hoặc xóa để tránh dữ liệu không đồng bộ.
 \subsection{Khái niệm và lợi ích}
 Redis là hệ thống lưu trữ dữ liệu key-value trong bộ nhớ, có khả năng lưu trữ nhiều kiểu dữ liệu khác nhau. Trong Việt Food, Redis được sử dụng chủ yếu làm hệ thống cache để tối ưu hóa thời gian truy vấn dữ liệu:
 
@@ -260,91 +82,24 @@ Redis là hệ thống lưu trữ dữ liệu key-value trong bộ nhớ, có kh
 \subsection{Triển khai trong dự án}
 Trong Việt Food, Redis được cấu hình và khởi tạo trong file \texttt{config/redis.ts}:
 
-\begin{verbatim}
-import Redis from "ioredis"
-import { REDIS_PORT, REDIS_HOST } from "../config"
-
-const redis = new Redis({
-    host: REDIS_HOST,
-    port: REDIS_PORT,
-})
-
-redis.on("connect", () => {
-    console.log(`[SUCCESS] Redis connected: ${redis.options.host}:${redis.options.port}`)
-})
-
-redis.on("error", (err) => {
-    console.error(err)
-})
-
-export default redis
-\end{verbatim}
+Cấu hình Redis được thiết lập thông qua thư viện \texttt{ioredis}, kết nối đến máy chủ Redis thông qua các biến môi trường. Hệ thống ghi log khi kết nối thành công hoặc gặp lỗi.
 
 \subsection{Cache dữ liệu món ăn}
 Dữ liệu món ăn là loại dữ liệu được truy cập thường xuyên nhưng ít thay đổi, nên việc cache là rất hiệu quả. Trong \texttt{DishService}, các phương thức tìm kiếm món ăn đều áp dụng caching:
 
-\begin{verbatim}
-// Lấy món ăn theo ID với cache
-static async findById(id: string | Types.ObjectId): Promise<IDishDocument | null> {
-    const cacheKey = `dish:${id}`
-    const cachedDish = await redis.get(cacheKey)
-    
-    if (cachedDish) {
-        return JSON.parse(cachedDish)
-    }
-    
-    const dish = await DishModel.findById(id).populate('category').lean()
-    if (dish) {
-        await redis.set(cacheKey, JSON.stringify(dish), 'EX', 3600 * 24)
-        return dish
-    }
-    
-    return null
-}
-\end{verbatim}
+Phương thức `findById` triển khai cơ chế cache-aside pattern. Khi nhận yêu cầu, hệ thống kiểm tra dữ liệu trong cache trước, nếu không có mới truy vấn database. Dữ liệu được lưu trong cache 24 giờ.
 
 \subsection{Prime Cache khi khởi động}
-Một điểm đáng chú ý là Việt Food sử dụng kỹ thuật "prime cache" khi khởi động server - tức là nạp trước dữ liệu phổ biến vào cache:
+Hệ thống áp dụng kỹ thuật "prime cache" khi khởi động server, nạp trước tất cả món ăn đang có sẵn vào Redis. Quá trình này giúp giảm thời gian phản hồi cho các truy vấn đầu tiên bằng cách đảm bảo dữ liệu thường dùng luôn sẵn sàng trong bộ nhớ đệm. Khi server khởi động, hệ thống thực hiện các bước sau:
 
-\begin{verbatim}
-static async primeAllDishesCache(): Promise<void> {
-    try {
-        const allDishes = await DishModel.find({ isAvailable: true }).lean()
-        if (allDishes && allDishes.length > 0) {
-            const pipeline = redis.pipeline()
-            for (const dish of allDishes) {
-                const cacheKey = `dish:${dish._id}`
-                dish.imageUrl = getFullImageUrl(dish.imageUrl)
-                pipeline.set(cacheKey, JSON.stringify(dish), 'EX', 3600 * 24)
-            }
-            await pipeline.exec()
-        }
-    } catch (error) {
-        console.error('Error priming all dishes cache:', error)
-    }
-}
-\end{verbatim}
-
-Phương thức này được gọi khi server khởi động trong \texttt{server.ts}:
-
-\begin{verbatim}
-connectDB();
-connectElasticsearch();
-DishService.primeAllDishesCache()
-\end{verbatim}
+1. Kết nối cơ sở dữ liệu chính
+2. Thiết lập kết nối với Elasticsearch
+3. Gọi phương thức `primeAllDishesCache()` để nạp trước dữ liệu món ăn vào Redis
 
 \subsection{Invalidation cache}
 Khi dữ liệu thay đổi, cache cần được cập nhật hoặc xóa để tránh dữ liệu không đồng bộ. Việt Food xử lý vấn đề này bằng cách xóa các key cache liên quan khi có thay đổi:
 
-\begin{verbatim}
-// Xóa cache khi cập nhật món ăn
-const keys = await redis.keys('dishes:*')
-if (keys.length > 0) {
-    const pipeline = redis.pipeline()
-    keys.forEach(key => pipeline.del(key))
-    await pipeline.exec()
-}
-\end{verbatim}
+Khi dữ liệu món ăn thay đổi, hệ thống tự động xóa các key cache liên quan để đảm bảo tính nhất quán dữ liệu. Quá trình này sử dụng pipeline để tối ưu hiệu năng khi xóa nhiều key cùng lúc, đảm bảo dữ liệu hiển thị cho người dùng luôn được cập nhật mới nhất.
 
 \section{Redis Stream}
 
@@ -361,59 +116,28 @@ Redis Stream là một cấu trúc dữ liệu mới trong Redis, cho phép lưu
 \subsection{Triển khai trong dự án}
 Trong Việt Food, Redis Stream được sử dụng chủ yếu để xử lý tin nhắn. Đầu tiên, stream key được định nghĩa trong file cấu hình Redis:
 
-\begin{verbatim}
-export const MESSAGE_STREAM_KEY = "message_stream";
-\end{verbatim}
+Hệ thống định nghĩa một hằng số \texttt{MESSAGE\_STREAM\_KEY} với giá trị \texttt{"message\_stream"} để xác định Redis Stream dùng cho việc xử lý tin nhắn.
 
 MessageWorkerService xử lý tin nhắn từ stream:
 
-\begin{verbatim}
-export default class MessageWorkerService {
-    static async createConsumerGroup() {
-        try {
-            const streamExists = await redis.exists(MESSAGE_STREAM_KEY);
-            if (!streamExists) {
-                await redis.xgroup('CREATE', MESSAGE_STREAM_KEY, GROUP_NAME, '0', 'MKSTREAM');
-            }
-        } catch (error) {
-            console.log('error', error);
-        }
-    }
+Lớp \texttt{MessageWorkerService} đảm nhận việc xử lý tin nhắn từ Redis Stream với hai phương thức chính:
 
-    static async processStreamMessages() {
-        while (true) {
-            try {
-                const result = await redis.xreadgroup(
-                    'GROUP', GROUP_NAME,
-                    CONSUMER_NAME,
-                    'COUNT', 1,
-                    'BLOCK', 0,
-                    'STREAMS', MESSAGE_STREAM_KEY,
-                    '>'
-                ) as XReadGroupResult;
+\begin{enumerate}
+    \item \texttt{createConsumerGroup()}: Thiết lập nhóm người tiêu dùng (consumer group) cho Redis Stream nếu chưa tồn tại
+    \item \texttt{processStreamMessages()}: Vòng lặp vô hạn đọc và xử lý tin nhắn từ stream, sử dụng cơ chế blocking read để tiết kiệm tài nguyên
+\end{enumerate}
 
-                const message = this.convertStreamMessageToObject(result?.[0]?.[1]?.[0]?.[1]);
-                if (message) {
-                    await MessageService.createMessage(message.userId, message.content, message.role);
-                }
-            } catch (error) {
-                console.error('Error processing stream messages:', error);
-            }
-        }
-    }
-}
-\end{verbatim}
+Quá trình xử lý bao gồm việc chuyển đổi dữ liệu từ định dạng stream sang đối tượng tin nhắn và lưu vào cơ sở dữ liệu thông qua `MessageService`.
 
 Stream consumer được khởi động riêng biệt từ file \texttt{consumer.ts}:
 
-\begin{verbatim}
-import MessageWorkerService from './services/message-worker.service';
+Quá trình khởi động consumer bao gồm các bước:
+1. Nhập module `MessageWorkerService` từ đường dẫn tương ứng
+2. Tạo một hàm tự thực thi không đồng bộ (async IIFE)
+3. Khởi tạo nhóm người tiêu dùng
+4. Bắt đầu xử lý tin nhắn từ stream
 
-(async () => {
-    await MessageWorkerService.createConsumerGroup();
-    await MessageWorkerService.processStreamMessages();
-})();
-\end{verbatim}
+Cách tiếp cận này đảm bảo consumer luôn sẵn sàng xử lý tin nhắn mới ngay khi khởi động.
 
 \section{HTTP Compression}
 
@@ -430,17 +154,12 @@ HTTP Compression là kỹ thuật nén dữ liệu trước khi gửi từ serve
 Việt Food sử dụng middleware \texttt{compression} của Express để nén dữ liệu:
 
 \begin{verbatim}
-import compression from "compression";
-
-const compressOptions = {
-    threshold: 1024,  // Chỉ nén dữ liệu lớn hơn 1KB
-    level: 6,        // Mức độ nén từ 1-9, cân bằng giữa tốc độ và hiệu quả nén
-}
-
-app.use(compression(compressOptions));
+Hệ thống sử dụng middleware `compression` của Express với cấu hình tối ưu: ngưỡng nén 1KB để tránh nén dữ liệu nhỏ không cần thiết, và mức nén 6 đảm bảo cân bằng giữa hiệu suất và tỷ lệ nén.
 \end{verbatim}
 
 Cấu hình này được thiết lập trong \texttt{server.ts}, áp dụng cho tất cả các request. Điểm đáng chú ý:
+
+
 
 \begin{itemize}
     \item \textbf{threshold 1024 bytes}: Chỉ nén các phản hồi có kích thước lớn hơn 1KB, tránh lãng phí tài nguyên CPU cho các phản hồi nhỏ
@@ -460,35 +179,9 @@ Sharp là thư viện xử lý hình ảnh cho Node.js, được xây dựng tr�
 \end{itemize}
 
 \subsection{Triển khai trong dự án}
-Việt Food sử dụng Sharp thông qua middleware \texttt{image-processor.middleware.ts} để xử lý ảnh khi người dùng tải lên:
+Việt Food sử dụng Sharp thông qua middleware \texttt{image-processor.middleware.ts} để xử lý ảnh khi người dùng tải lên.
 
-\begin{verbatim}
-import sharp from 'sharp';
-import fs from 'fs';
-import path from 'path';
-
-const processOneImage = async (file: Express.Multer.File): Promise<void> => {
-    const originalPath = file.path;
-    const fileDir = path.dirname(originalPath);
-    const filename = path.basename(originalPath, path.extname(originalPath));
-    const webpFilename = `${filename}.webp`;
-    const outputPath = path.join(fileDir, webpFilename);
-
-    await sharp(originalPath)
-        .resize(1000)
-        .webp({
-            quality: 80,
-            effort: 6  
-        })
-        .toFile(outputPath);
-
-    fs.unlinkSync(originalPath);
-
-    file.path = outputPath;
-    file.filename = webpFilename;
-    file.mimetype = 'image/webp';
-};
-\end{verbatim}
+Hệ thống xử lý ảnh tải lên bằng thư viện Sharp, thực hiện các bước tối ưu: chuyển đổi sang định dạng WebP, giảm kích thước tối đa 1000px, đặt chất lượng 80% và mức nén tối ưu. Ảnh gốc được xóa sau khi xử lý để tiết kiệm không gian lưu trữ.
 
 Middleware này thực hiện các tối ưu:
 
@@ -500,18 +193,6 @@ Middleware này thực hiện các tối ưu:
 \end{itemize}
 
 Middleware này được áp dụng cho các route xử lý upload hình ảnh, đảm bảo tất cả hình ảnh đều được tối ưu trước khi lưu trữ.
-
-\section{Tích hợp và tương tác giữa các kỹ thuật}
-
-Các kỹ thuật tối ưu trong Việt Food không hoạt động độc lập mà bổ trợ cho nhau:
-
-\begin{itemize}
-    \item \textbf{Sharp + Redis}: Hình ảnh được tối ưu với Sharp, sau đó URL được lưu trong Redis cache
-    \item \textbf{Redis Cache + Compression}: Dữ liệu được cache và nén khi truyền tải, giảm thời gian tải trang
-    \item \textbf{Redis Stream + Services}: Xử lý tin nhắn không đồng bộ, giải phóng server chính để xử lý các request khác
-\end{itemize}
-
-Việc kết hợp các kỹ thuật này tạo nên một pipeline tối ưu, từ khi dữ liệu được tạo ra, lưu trữ đến khi được truyền tải đến người dùng cuối.
 
 \section{Hệ thống Agent thông minh}
 
@@ -526,185 +207,41 @@ Việt Food triển khai một hệ thống Agent thông minh hỗ trợ khách 
     \item \textbf{Xử lý quy trình}: Hướng dẫn người dùng hoàn thành quy trình đặt hàng
 \end{itemize}
 
-\subsection{Kiến trúc Agent}
-
-Hệ thống Agent được xây dựng với kiến trúc microservice, tách biệt với core service chính:
-
-\begin{verbatim}
-// agent-service.ts
-export class AgentService {
-    private nlpProcessor: NLPProcessor;
-    private recommendationEngine: RecommendationEngine;
-    
-    constructor() {
-        this.nlpProcessor = new NLPProcessor();
-        this.recommendationEngine = new RecommendationEngine();
-    }
-    
-    async processUserMessage(userId: string, message: string): Promise<AgentResponse> {
-        // Xử lý tin nhắn từ người dùng
-        const intent = await this.nlpProcessor.detectIntent(message);
-        
-        // Lưu tin nhắn vào cơ sở dữ liệu
-        await this.storeMessage(userId, message, 'user');
-        
-        // Tạo phản hồi dựa trên intent
-        const response = await this.generateResponse(userId, intent, message);
-        
-        // Lưu phản hồi của Agent
-        await this.storeMessage(userId, response.content, 'agent');
-        
-        return response;
-    }
-    
-    private async generateResponse(userId: string, intent: Intent, message: string): Promise<AgentResponse> {
-        switch (intent.type) {
-            case 'DISH_RECOMMENDATION':
-                return await this.recommendationEngine.getRecommendations(userId, intent.parameters);
-            case 'ORDER_STATUS':
-                return await this.getOrderStatus(userId);
-            // Xử lý các intent khác
-            default:
-                return { content: 'Xin lỗi, tôi không hiểu yêu cầu của bạn.' };
-        }
-    }
-}
-\end{verbatim}
 
 \subsection{Lưu trữ message và quản lý context}
 
 Một trong những thách thức lớn nhất của hệ thống Agent là việc lưu trữ tin nhắn và duy trì context hội thoại. Việt Food sử dụng MongoDB để lưu trữ tin nhắn và Redis để quản lý context session:
 
-\begin{verbatim}
-// message.model.ts
-import { Schema, model, Types, Document } from "mongoose";
+Mô hình dữ liệu tin nhắn được thiết kế với các trường chính sau:
 
-export enum MessageRole {
-    USER = "user",
-    ASSISTANT = "assistant",
-}
+\begin{itemize}
+    \item `userId`: Định danh duy nhất của người dùng, dùng để liên kết tin nhắn với tài khoản người dùng cụ thể
+    \item `content`: Nội dung văn bản của tin nhắn, được mã hóa UTF-8
+    \item `role`: Phân biệt giữa tin nhắn từ người dùng (`user`) và hệ thống (`system` hoặc `assistant`)
+    \item `timestamps`: Tự động thêm thời gian tạo (`createdAt`) và cập nhật (`updatedAt`)
+\end{itemize}
 
-export interface IMessage {
-    userId: Types.ObjectId;
-    content: string;
-    role: MessageRole;
-}
+Dịch vụ `MessageService` cung cấp bộ phương thức toàn diện để quản lý vòng đời tin nhắn:
 
-const messageSchema = new Schema({
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    content: { type: String, required: true },
-    role: { type: String, enum: MessageRole, required: true },
-}, { timestamps: true });
-
-const Message = model("Message", messageSchema);
-\end{verbatim}
-
-Dịch vụ MessageService cung cấp các phương thức để lưu trữ và truy xuất tin nhắn, kết hợp với Redis Stream để xử lý bất đồng bộ:
-
-\begin{verbatim}
-// message.service.ts
-import redis from "@/config/redis";
-import Message, { MessageRole } from "@/model/message.model";
-import { Types } from "mongoose";
-
-export const MESSAGE_STREAM_KEY = "message_stream";
-export const MESSAGE_GROUP_NAME = "message_group";
-
-export default class MessageService {
-    static async createMessage(userId: Types.ObjectId, content: string, role: MessageRole) {
-        const newMessage = await Message.create({ userId, content, role });
-        return newMessage;
-    }
-
-    static async getMessagesByUserId(userId: Types.ObjectId) {
-        const messages = await Message.find({ userId }).sort({ createdAt: -1 }).lean();
-        return messages;
-    }
-
-    static addMessageToStream = async (streamKey: string, message: Record<string, any>): Promise<string | null> => {
-        const result = await redis.xadd(streamKey, "*", ...Object.entries(message).flat());
-        return result;
-    }
-}
-\end{verbatim}
+\begin{itemize}
+    \item Tạo và lưu trữ tin nhắn mới trong cơ sở dữ liệu MongoDB
+    \item Truy vấn lịch sử tin nhắn theo người dùng, với phân trang và sắp xếp thời gian giảm dần
+    \item Tích hợp Redis Stream cho xử lý bất đồng bộ, đảm bảo khả năng mở rộng
+    \item Quản lý trạng thái tin nhắn thời gian thực thông qua WebSocket
+\end{itemize}
 
 \subsection{Quản lý context hội thoại}
 
-Duy trì context hội thoại là yếu tố quan trọng để Agent có thể hiểu được tiến trình đối thoại đang diễn ra. Trong hệ thống Việt Food, context hội thoại được xây dựng bằng cách kết hợp lịch sử tin nhắn với trạng thái hội thoại hiện tại. Mỗi trạng thái hội thoại có thể bao gồm các thông tin quan trọng như:
+Duy trì context hội thoại là yếu tố quan trọng để Agent có thể hiểu được tiến trình đối thoại đang diễn ra. Một phương pháp tối ưu để quản lý context hội thoại được triển khai bằng cách sử dụng Google GenAI kết hợp với cơ chế in-memory cache. Hệ thống quản lý các phiên hội thoại thông qua các thành phần chính sau:
 
 \begin{itemize}
-    \item \textbf{Trạng thái hội thoại}: Đang tìm kiếm món ăn, đang xác nhận đơn hàng, v.v.
-    \item \textbf{Thông tin người dùng}: Sở thích, ràng buộc ăn uống, địa chỉ giao hàng
-    \item \textbf{Giỏ hàng hiện tại}: Các món ăn đã được thêm vào giỏ hàng trong cuộc hội thoại
-    \item \textbf{Intent trước đó}: Mục đích giao tiếp trước đó của người dùng
+    \item \textbf{AgentSessionEntry}: Lưu trữ thông tin phiên hội thoại, bao gồm đối tượng chat và thời gian truy cập cuối cùng
+    \item \textbf{Session Management}: Tự động dọn dẹp các phiên không hoạt động sau 1 giờ
+    \item \textbf{In-memory Storage}: Sử dụng Map để lưu trữ các phiên với thời gian thực
+    \item \textbf{Automatic Cleanup}: Hệ thống tự động dọn dẹp các phiên không hoạt động mỗi 10 phút
 \end{itemize}
 
-Một phương pháp tối ưu để quản lý context hội thoại có thể được triển khai bằng cách sử dụng Google GenAI và in-memory cache, với định nghĩa cơ bản như sau:
-
-\begin{verbatim}
-// agent.service.ts
-import { Chat, FunctionCall, GoogleGenAI } from "@google/genai";
-import { GEMINI_API_KEY, MODEL } from "@/config";
-
-interface AgentSessionEntry {
-    chat: Chat;
-    lastAccessed: number;
-}
-
-export class Agent {
-    static gemini = new GoogleGenAI({
-        apiKey: GEMINI_API_KEY,
-    });
-
-    static agentSessionMap = new Map<string, AgentSessionEntry>();
-
-    static readonly SESSION_TTL = 1 * 60 * 60 * 1000; // 1 giờ
-
-    static getOrCreateAgentSession = (user: IUserDocument): Chat => {
-        const userId = user?.id;
-        let sessionEntry = this.agentSessionMap.get(userId);
-
-        if (sessionEntry) {
-            const currentTime = Date.now();
-            if (currentTime - sessionEntry.lastAccessed > this.SESSION_TTL) {
-                this.agentSessionMap.delete(userId);
-                sessionEntry = undefined;
-            } else {
-                sessionEntry.lastAccessed = currentTime;
-                return sessionEntry.chat;
-            }
-        }
-
-        const newAgentSession: Chat = this.gemini.chats.create({
-            model: MODEL,
-            config: {
-                tools,
-                responseMimeType: 'text/plain',
-                systemInstruction: `Bạn là nhân viên bán món ăn của cửa hàng Việt Food đang trò chuyện với ${user?.username}. Hãy trả lời vui vẻ, thân thiện, kèm theo các emoji. Hãy nói chuyện sao cho khách hàng đủ mua món ăn.`,
-                maxOutputTokens: 500,
-                topP: 0
-            }
-        });
-
-        this.agentSessionMap.set(userId, {
-            chat: newAgentSession,
-            lastAccessed: Date.now()
-        });
-
-        return newAgentSession;
-    }
-}
-\end{verbatim}
-
-Phương pháp này mang lại nhiều ưu điểm quan trọng:
-
-\begin{itemize}
-    \item \textbf{Context tự động}: Google Gemini tự động duy trì context hội thoại, giảm thiểu việc sử dụng
-    \item \textbf{In-memory cache}: Các phiên hội thoại (Chat Session) được lưu trữ trong Map với thời gian sống là 1 giờ
-    \item \textbf{Tích hợp tools}: Hệ thống sử dụng các function tools (Function Calling) để Agent có thể thực hiện các tác vụ như tìm kiếm món ăn, thêm vào giỏ hàng
-\end{itemize}
-
-Các function tool quan trọng được triển khai cho hệ thống bao gồm:
+Cách tiếp cận này đảm bảo hiệu suất cao trong khi vẫn duy trì được trạng thái hội thoại cần thiết cho trải nghiệm người dùng liền mạch. Các function tool quan trọng được triển khai cho hệ thống bao gồm:
 
 \begin{itemize}
     \item \textbf{searchDishes}: Tìm kiếm món ăn theo các tiêu chí
@@ -714,4 +251,21 @@ Các function tool quan trọng được triển khai cho hệ thống bao gồm
     \item \textbf{getAllDishes}: Lấy toàn bộ danh sách món ăn
 \end{itemize}
 
-Việc kết hợp Google GenAI, in-memory cache, và các function tool tạo nên một hệ thống Agent thông minh có khả năng duy trì cuộc hội thoại mạch lạc với người dùng. Context được duy trì xuyên suốt cuộc hội thoại giúp Agent hiểu được ý định và mong muốn của người dùng, đồng thời thực hiện các tác vụ cần thiết như tìm kiếm món ăn và đặt hàng.
+\subsection{Vấn đề đang gặp phải}
+
+Hệ thống Agent đang gặp phải một số vấn đề như:
+
+\begin{itemize}
+    \item \textbf{Quản lý context hội thoại}: Chưa áp dụng cơ chế lọc context để lấy thông tin cần thiết của người dùng trong cuộc hội thoại
+
+    \item \textbf{Agent}: Chưa tối ưu khả năng làm công việc phức tạp, chỉ hoạt động tốt với các yêu cầu cơ bản
+
+    \item \textbf{Function Calling}: Chưa triển khai đầy đủ các function tool để Agent có thể thực hiện các tác vụ phức tạp
+    \item \textbf{Context hội thoại}: Nguy cơ mất dữ liệu message do redis stream không được lưu trữ lâu dài
+    
+\end{itemize}
+
+
+
+
+

@@ -20,7 +20,7 @@ export interface RecentOrder {
     status: OrderStatus
     totalAmount: number
     orderItems: OrderItem[]
-    shippingAddress: IAddress
+    address: IAddress
     note: string
     paymentID: string
 }

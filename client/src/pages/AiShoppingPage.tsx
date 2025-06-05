@@ -73,29 +73,6 @@ export default function AiShoppingPage() {
                             ))}
                     </div>
                 )}
-
-                {isAiLoading && (
-                    <div className="text-center py-8">
-                        <i className="fas fa-spinner fa-spin text-4xl text-primary mb-4"></i>
-                        <p className="text-neutral/70">AI đang tìm kiếm, vui lòng chờ...</p>
-                    </div>
-                )}
-
-                {!isAiLoading && !textResponse && !aiQuery && (
-                    <div className="text-center py-8 p-6 bg-white rounded-lg shadow">
-                        <i className="fas fa-magic text-4xl text-primary/50 mb-4"></i>
-                        <h3 className="font-medium text-xl mb-2">Chào mừng đến với tìm kiếm AI!</h3>
-                        <p className="text-neutral/70">Hãy nhập yêu cầu của bạn vào ô bên trên để AI gợi ý món ăn.</p>
-                    </div>
-                )}
-
-                {textResponse && !functionsResponse.find((fr) => fr.responseType === 'dishes')?.response && !isAiLoading && (
-                    <div className="text-center py-8 p-6 bg-white rounded-lg shadow">
-                        <i className="fas fa-search-minus text-4xl text-neutral/40 mb-4"></i>
-                        <h3 className="font-medium text-xl mb-2">AI không tìm thấy món ăn nào</h3>
-                        <p className="text-neutral/70">Vui lòng thử lại với một yêu cầu khác hoặc xem qua các món ăn thông thường.</p>
-                    </div>
-                )}
             </div>
         </div>
     )

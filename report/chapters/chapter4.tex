@@ -1,149 +1,123 @@
-\section{Đánh giá tổng thể dự án}
+\section{Thử nghiệm hiệu suất hệ thống}
 
-Sau khi phân tích chi tiết các thành phần của dự án Việt Food, phần này đánh giá hiệu quả tổng thể của dự án, xem xét cả frontend và backend, đồng thời chỉ ra ưu điểm và hạn chế của cách triển khai hiện tại.
+Chương này trình bày kết quả thử nghiệm hiệu suất của hệ thống Việt Food, tập trung vào đánh giá khả năng chịu tải và hiệu quả của các cơ chế tối ưu hóa. Các thử nghiệm được thực hiện trong môi trường phát triển với cấu hình phần cứng: Mac M4, 16GB RAM, 10-core CPU (chạy trên 1 core).
 
-\section{Ưu điểm của mã nguồn}
+\section{Phương pháp thử nghiệm}
 
-\subsection{Frontend}
+Để đánh giá hiệu suất của hệ thống, Em đã thực hiện các bài kiểm tra tải (load test) sử dụng công cụ Apache Bench (ab) với các tham số sau:
+
+\begin{verbatim}
+ab -n 10000 -c 200 http://127.0.0.1:3000/api/dishes?page=1&limit=9&searchTerm=com
+\end{verbatim}
+
+Trong đó:
 \begin{itemize}
-    \item \textbf{Kiến trúc component mạch lạc}: Sử dụng Atomic Design Pattern giúp code dễ bảo trì, mở rộng và tái sử dụng.
-    \item \textbf{Tách biệt logic và UI}: Sử dụng custom hooks để tách biệt logic nghiệp vụ khỏi giao diện.
-    \item \textbf{React Query}: Sử dụng hiệu quả để quản lý dữ liệu server-side, bao gồm cache và invalidation.
-    \item \textbf{Tối ưu hóa hiệu suất}: Áp dụng các kỹ thuật như code splitting, lazy loading, và memoization.
-    \item \textbf{Sử dụng Tailwind và Radix UI}: Kết hợp hiệu quả giữa utility-first CSS và headless UI components.
-    \item \textbf{Responsive design}: Giao diện đáp ứng tốt trên các kích thước màn hình khác nhau.
-    \item \textbf{Strong typing}: Sử dụng TypeScript và Zod giúp phát hiện lỗi sớm và đảm bảo type safety.
+    \item \textbf{ab}: Công cụ Apache Bench
+    \item \textbf{-n 10000}: Tổng số request gửi đi là 10,000
+    \item \textbf{-c 200}: Số lượng request đồng thời (concurrent) là 200
+    \item \textbf{API}: API lấy danh sách món ăn với phân trang và tìm kiếm 9 món ăn và từ khoá com
 \end{itemize}
 
-\subsection{Redis Caching}
-\begin{itemize}
-    \item \textbf{Áp dụng hợp lý}: Cache được áp dụng cho các dữ liệu thường xuyên được truy cập nhưng ít thay đổi như thông tin món ăn và danh mục.
-    \item \textbf{Chiến lược priming thông minh}: Việc nạp trước dữ liệu phổ biến vào cache khi khởi động server giúp tăng hiệu suất ngay từ đầu.
-    \item \textbf{Thời gian hết hạn phù hợp}: Các key cache có thời gian hết hạn khác nhau tùy theo loại dữ liệu, ví dụ:
-    \begin{verbatim}
-    // Dữ liệu chi tiết món ăn - 24 giờ
-    await redis.set(cacheKey, JSON.stringify(dish), 'EX', 3600 * 24)
-    
-    // Danh sách món ăn theo query - 10 phút
-    await redis.set(cacheKey, JSON.stringify(result), 'EX', 600)
-    
-    // Món ăn phổ biến - 6 giờ
-    await redis.set(cacheKey, JSON.stringify(popularDishes), 'EX', 3600 * 6)
-    \end{verbatim}
-    \item \textbf{Sử dụng pipeline}: Việc sử dụng Redis pipeline khi thực hiện nhiều thao tác liên tiếp giúp giảm độ trễ mạng, tăng hiệu suất.
-\end{itemize}
+Em tiến hành thử nghiệm với tổng số lượng món ăn là 10000 trên hai phiên bản của hệ thống:     
+\begin{enumerate}
+    \item Phiên bản không nén dữ liệu (No compression)
+    \item Phiên bản có bật nén HTTP (With compression)
+\end{enumerate}
 
-\subsection{Redis Stream}
-\begin{itemize}
-    \item \textbf{Kiến trúc phân tách}: Tách biệt xử lý tin nhắn khỏi luồng chính của ứng dụng, giúp giảm tải cho server chính.
-    \item \textbf{Khả năng phục hồi}: Cơ chế consumer group đảm bảo tin nhắn vẫn được xử lý ngay cả khi có lỗi.
-    \item \textbf{Mở rộng dễ dàng}: Có thể thêm nhiều consumer để xử lý song song nếu cần.
-\end{itemize}
+\section{Kết quả thử nghiệm}
 
-\subsection{HTTP Compression}
-\begin{itemize}
-    \item \textbf{Cấu hình cân bằng}: Cấu hình compression với ngưỡng 1KB và mức nén 6 là cân bằng hợp lý giữa hiệu quả nén và tài nguyên CPU.
-    \item \textbf{Áp dụng toàn cục}: Compression được áp dụng như middleware cho tất cả các response, đảm bảo tính nhất quán.
-\end{itemize}
+\subsection{Phiên bản không nén dữ liệu}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{images/no-compress.png}
+    \caption{Kết quả kiểm thử tải - Không nén dữ liệu}
+    \label{fig:no-compress}
+\end{figure}
 
-\subsection{Tối ưu hình ảnh với Sharp}
-\begin{itemize}
-    \item \textbf{Chuyển đổi định dạng thông minh}: Chuyển đổi sang WebP giúp giảm đáng kể kích thước file (trung bình 30-50\% so với JPEG và 80\% so với PNG) mà vẫn duy trì chất lượng.
-    \item \textbf{Resize tự động}: Giới hạn kích thước hình ảnh ở mức 1000px là đủ cho hầu hết trường hợp sử dụng trên web.
-    \item \textbf{Triển khai dưới dạng middleware}: Cách triển khai này đảm bảo tất cả hình ảnh tải lên đều được xử lý đồng nhất.
-\end{itemize}
+\begin{table}[H]
+    \centering
+    \caption{Chỉ số hiệu suất - Không nén dữ liệu}
+    \begin{tabular}{|l|r|}
+    \hline
+    \textbf{Chỉ số} & \textbf{Giá trị} \\
+    \hline
+    Document Length & 3330 [bytes] \\
+    Requests per second & 2366,34 [req/s] \\
+    Time per request (mean) & 84.519 [ms] \\
+    Time per request (across concurrent) & 0.423 [ms] \\
+    Transfer rate & 8307.59[KBytes/sec] \\
+    \hline
+    \end{tabular}
+    \label{tab:no-compress}
+\end{table}
 
-\section{Nhược điểm và hạn chế}
 
-\subsection{Frontend}
-\begin{itemize}
-    \item \textbf{Chưa có SSR/SSG}: Hiện tại Việt Food sử dụng Client-Side Rendering (CSR) với Vite, chưa áp dụng Server-Side Rendering hoặc Static Site Generation, ảnh hưởng đến SEO và thời gian tải trang ban đầu.
-    \item \textbf{Bundle size lớn}: Mặc dù đã có code-splitting, nhưng có nhiều thư viện lớn từ Radix UI, Chart.js, và Framer Motion làm tăng kích thước bundle.
-    \item \textbf{Quá phụ thuộc vào React Query}: Sử dụng React Query trong hầu hết các component làm tăng sự phụ thuộc vào một thư viện bên ngoài.
-    \item \textbf{Chưa có test coverage đầy đủ}: Thiếu các unit test và integration test cho các component và custom hooks.
-    \item \textbf{Tài nguyên hình ảnh chưa được tối ưu hoá đầy đủ}: Chưa có cơ chế lazy loading hình ảnh tự động và next-gen format (WebP, AVIF) ở phía client.
-\end{itemize}
+\subsection{Phiên bản có nén dữ liệu}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{images/compress.png}
+    {\footnotesize \caption{Kết quả kiểm thử tải - Có nén dữ liệu}}
+    \label{fig:compress}
+\end{figure}
 
-\subsection{Redis Caching}
-\begin{itemize}
-    \item \textbf{Chiến lược invalidation chưa tinh tế}: Hiện tại, khi có cập nhật, dự án xóa tất cả các key cache liên quan đến danh sách món ăn. Cách tiếp cận này đơn giản nhưng có thể gây lãng phí khi một số cache vẫn có thể tái sử dụng.
-    \begin{verbatim}
-    // Xóa tất cả cache liên quan đến danh sách món ăn
-    const keys = await redis.keys('dishes:*')
-    if (keys.length > 0) {
-        const pipeline = redis.pipeline()
-        keys.forEach(key => pipeline.del(key))
-        await pipeline.exec()
-    }
-    \end{verbatim}
-    \item \textbf{Thiếu cơ chế phát hiện lỗi cache}: Chưa có cơ chế fallback hoặc circuit breaker nếu Redis gặp sự cố.
-    \item \textbf{Chưa tận dụng tối đa tính năng của Redis}: Dự án chưa sử dụng các cấu trúc dữ liệu phức tạp của Redis như sorted sets, lists để tối ưu hơn nữa.
-\end{itemize}
+\begin{table}[H]
+    \centering
+    \caption{Chỉ số hiệu suất - Có nén dữ liệu}
+    \begin{tabular}{|l|r|}
+    \hline
+    \textbf{Chỉ số} & \textbf{Giá trị} \\
+    \hline
+    Document Length & 883 [bytes] \\
+    Requests per second & 2273.62 [req/s] \\
+    Time per request (mean) & 87.965 [ms] \\
+    Time per request (across concurrent) & 0.44 [ms] \\
+    Transfer rate & 2553.38 [KBytes/sec] \\
+    \hline
+    \end{tabular}
+    \label{tab:compress}
+\end{table}
 
-\subsection{Redis Stream}
-\begin{itemize}
-    \item \textbf{Xử lý lỗi còn đơn giản}: Khi gặp lỗi xử lý tin nhắn, hệ thống chỉ ghi log lỗi mà không có cơ chế retry phức tạp hoặc dead letter queue.
-    \item \textbf{Thiếu cơ chế giám sát}: Chưa có metrics hoặc monitoring cho việc xử lý stream.
-\end{itemize}
+\section{Phân tích kết quả}
 
-\subsection{HTTP Compression}
-\begin{itemize}
-    \item \textbf{Áp dụng đơn điệu}: Compression được áp dụng đồng đều cho tất cả các route mà không phân biệt loại dữ liệu.
-    \item \textbf{Thiếu header điều khiển cache}: Chưa kết hợp tốt giữa compression và HTTP caching headers.
-\end{itemize}
+\subsection{So sánh hiệu suất}
 
-\subsection{Tối ưu hình ảnh với Sharp}
-\begin{itemize}
-    \item \textbf{Kích thước cố định}: Resize cố định ở mức 1000px có thể không phù hợp cho tất cả trường hợp sử dụng.
-    \item \textbf{Thiếu responsive images}: Chưa tạo nhiều phiên bản hình ảnh với kích thước khác nhau cho các thiết bị khác nhau.
-\end{itemize}
+\begin{table}[H]
+    \centering
+    \caption{So sánh hiệu suất giữa hai phiên bản}
+    \begin{tabular}{|l|r|r|r|}
+    \hline
+    \textbf{Chỉ số} & \textbf{Không nén} & \textbf{Có nén} & \textbf{Thay đổi} \\
+    \hline
+    Requests/second & 2366.34 & 2273.62 & -3.9\% \\
+    Time/req (mean) & 84.519 ms & 87.965 ms & -3.9\% \\
+    Document Length & 3330 [bytes] & 883 [bytes] & -73.5\% \\
+    \hline
+    \end{tabular}
+    \label{tab:comparison}
+\end{table}
 
-\section{Đề xuất cải tiến}
+\subsection{Nhận xét}
 
-\subsection{Frontend}
-\begin{itemize}
-    \item \textbf{Áp dụng Next.js hoặc Astro}: Chuyển sang các framework hỗ trợ SSR/SSG để cải thiện SEO và thời gian tải trang ban đầu.
-    \item \textbf{Tree-shaking các thư viện}: Tối ưu hóa bundle size bằng cách import có chọn lọc các component từ Radix UI và các thư viện khác.
-    \item \textbf{Tách biệt logic data-fetching}: Giảm sự phụ thuộc vào React Query bằng cách tạo lớp trung gian giữa API calls và React Query.
-    \item \textbf{Tăng test coverage}: Thêm unit tests và integration tests cho các component và hooks chính sử dụng Jest và React Testing Library.
-    \item \textbf{Tối ưu hóa hình ảnh}: Sử dụng next-gen formats (WebP/AVIF), responsive images và image CDN.
-    \item \textbf{Web Vitals monitoring}: Thiết lập hệ thống theo dõi các Core Web Vitals để đánh giá hiệu suất thực tế.
-    \item \textbf{Client-side caching}: Triển khai Service Worker và PWA để cải thiện trải nghiệm offline và giảm tải cho server.
-\end{itemize}
+1. \textbf{Hiệu suất xử lý}: Phiên bản có bật nén cho thấy hiệu suất tốt hơn nhẹ với số lượng request xử lý mỗi giây giảm 3.2\% (từ 2,366.34 xuống còn 2,273.62 requests/giây).
 
-\subsection{Redis Caching}
-\begin{itemize}
-    \item \textbf{Invalidation có chọn lọc}: Thay vì xóa tất cả cache, có thể áp dụng cơ chế cache tagging để chỉ xóa những cache bị ảnh hưởng bởi thay đổi.
-    \item \textbf{Cơ chế fallback}: Thêm try-catch và circuit breaker pattern khi tương tác với Redis.
-    \item \textbf{Tận dụng Redis Pub/Sub}: Kết hợp với Redis Pub/Sub để thông báo invalidation cache giữa nhiều instance của ứng dụng.
-    \item \textbf{Áp dụng caching ở nhiều lớp}: Kết hợp với HTTP caching để tối ưu hơn nữa.
-\end{itemize}
+2. \textbf{Thời gian phản hồi}: Thời gian xử lý trung bình tăng 3.1\%, từ 84.519ms lên còn 87.965ms.
 
-\subsection{Redis Stream}
-\begin{itemize}
-    \item \textbf{Consumer groups nâng cao}: Thêm nhiều consumer trong cùng một group để xử lý song song.
-    \item \textbf{Cơ chế retry có kiểm soát}: Thêm logic để thử lại xử lý tin nhắn với giới hạn số lần và khoảng thời gian tăng dần.
-    \item \textbf{Dead letter queue}: Chuyển tin nhắn không thể xử lý sau nhiều lần thử vào một stream riêng để kiểm tra sau.
-\end{itemize}
+3. \textbf{Độ ổn định}: Cả hai phiên bản đều xử lý thành công 100\% các request, cho thấy độ ổn định cao của hệ thống ngay cả dưới tải lớn.
 
-\subsection{HTTP Compression}
-\begin{itemize}
-    \item \textbf{Brotli compression}: Xem xét sử dụng Brotli thay vì gzip cho hiệu suất nén tốt hơn trên các trình duyệt hiện đại.
-    \item \textbf{Compression có điều kiện}: Áp dụng các mức nén khác nhau cho các loại dữ liệu và endpoint khác nhau.
-    \item \textbf{Pre-compressed assets}: Tạo sẵn phiên bản nén của các tài nguyên tĩnh.
-\end{itemize}
+\section{Kết luận}
 
-\subsection{Tối ưu hình ảnh với Sharp}
-\begin{itemize}
-    \item \textbf{Tạo nhiều kích thước}: Tạo và lưu trữ nhiều phiên bản của mỗi hình ảnh với các kích thước khác nhau.
-    \begin{verbatim}
-    // Ví dụ: tạo 3 phiên bản hình ảnh
-    await Promise.all([
-        sharp(originalPath).resize(1200).webp({ quality: 80 }).toFile(`${outputPath}-large.webp`),
-        sharp(originalPath).resize(600).webp({ quality: 80 }).toFile(`${outputPath}-medium.webp`),
-        sharp(originalPath).resize(300).webp({ quality: 70 }).toFile(`${outputPath}-small.webp`)
-    ]);
-    \end{verbatim}
-    \item \textbf{Áp dụng lazy loading}: Kết hợp với frontend để áp dụng lazy loading và responsive images.
-    \item \textbf{CDN integration}: Xem xét sử dụng CDN chuyên biệt cho hình ảnh với khả năng xử lý hình ảnh theo yêu cầu.
-\end{itemize}
+Các kết quả thử nghiệm cho thấy:
+
+1. Việc áp dụng HTTP compression mang lại hiệu quả đáng kể trong việc tiết kiệm băng thông mạng (giảm hơn 71.2\%) trong khi chỉ ảnh hưởng không đáng kể đến hiệu suất xử lý của server.
+
+2. Hệ thống có khả năng mở rộng tốt, có thể xử lý hơn 2000 requests mỗi giây chỉ sử dụng 1 core CPU
+
+3. Thời gian phản hồi ổn định và nằm trong ngưỡng chấp nhận được cho ứng dụng web, với 90\% request hoàn thành dưới 200ms.
+
+4. Để tối ưu hơn nữa, có thể áp dụng:
+   - Tối ưu hóa các truy vấn cơ sở dữ liệu
+   - Áp dụng thêm caching ở nhiều tầng
+   - Triển khai cân bằng tải khi mở rộng hệ thống
+   - Chạy nhiều instance của ứng dụng để xử lý song song
+
+
